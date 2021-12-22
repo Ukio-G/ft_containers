@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 project(ft_containers)
 
-include_directories(ft_vector ft_map ft_stack)
+include_directories(ft_vector ft_map ft_stack ft_meta_cpp)
 
 set(CMAKE_CXX_STANDARD 98)
 
