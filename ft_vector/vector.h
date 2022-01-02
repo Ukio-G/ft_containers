@@ -4,25 +4,15 @@
 #include <memory>
 #include <cstddef>
 #include <iterator_traits.hpp>
+#include <stdexcept>
+#include <sstream>
+#include <limits>
 
 namespace ft {
 
 
     template <typename T, typename Allocator = std::allocator<T> >
     class vector;
-
-
-
-    template <class T> struct iterator_traits<vector<T> >
-    {
-        typedef T value_type;
-        typedef ptrdiff_t difference_type;
-        typedef T* pointer;
-        typedef T& reference;
-        typedef random_access_iterator_tag iterator_category;
-    };
-
-
 
     template <typename T, typename Allocator>
     class vector {
@@ -36,13 +26,13 @@ namespace ft {
         typedef typename Allocator::pointer  pointer;
         typedef const typename Allocator::pointer  const_pointer;
 
-        class iterator {
+    class iterator {
+        public:
             typedef T value_type;
-            typedef ptrdiff_t difference_type;
+            typedef std::ptrdiff_t difference_type;
             typedef T* pointer;
             typedef T& reference;
-            typedef random_access_iterator_tag iterator_category;
-
+            typedef std::random_access_iterator_tag iterator_category;
             /* C++ named requirements: LegacyIterator */
 
             //  * C++ named requirements: CopyConstructible
@@ -55,9 +45,6 @@ namespace ft {
                 m_data_pointer = other.m_data_pointer;
                 return *this;
             }
-
-            //  * C++ named requirements: Destructible
-            ~iterator() { }
 
             // is dereferenceable
             T& operator*() {
@@ -80,8 +67,12 @@ namespace ft {
             /* C++ named requirements: LegacyInputIterator */
 
             // C++ named requirements: EqualityComparable
-            bool operator==(iterator & other) {
-                return true;
+            bool operator==(const iterator & other) {
+                return m_data_pointer == other.m_data_pointer;
+            }
+
+            bool operator!=(const iterator & other) {
+                return m_data_pointer != other.m_data_pointer;
             }
 
             /* LegacyForwardIterator */
@@ -125,7 +116,7 @@ namespace ft {
             }
 
             difference_type operator-(const iterator & other) {
-                return (m_data_pointer - other.m_data_pointer) / sizeof(T);
+                return (m_data_pointer - other.m_data_pointer);
             }
 
             T& operator[](int i) {
@@ -148,70 +139,147 @@ namespace ft {
             bool operator<=(const iterator &other) {
                 return m_data_pointer <= other.m_data_pointer;
             }
+            //  * C++ named requirements: Destructible
+            ~iterator() { }
 
             iterator(T* data_ptr) : m_data_pointer(data_ptr) { }
-
 
         private:
             T* m_data_pointer;
         };
 
-        vector();
-        ~vector();
+        vector() : _size(0), _capacity(0), _allocator(), _data(0) { };
+        vector(size_type n) : _size(n), _capacity(n), _allocator() {
+            T _default;
+            allocate(n);
+            for (int i = 0; i < n; ++i)
+                _allocator.construct(_data + i, _default);
+        };
 
-        vector<T, Allocator>& operator=(const vector& other);
+        vector(size_type n, const_reference other) : _size(n), _capacity(n), _allocator() {
+            allocate(n);
+            for (int i = 0; i < n; ++i)
+                _allocator.construct(_data + i, other);
+        };
 
-        void assign(size_type count, const_reference value);
+        ~vector() {
+            reallocateToSize(0);
+        }
 
-        allocator_type get_allocator() const;
+        vector<T, Allocator>& operator=(const vector& other) {
+            if (&other == this)
+                return *this;
+            reallocateToSize(other.size());
+            wipeData();
+            for (int i = 0; i < other.size(); ++i)
+                _allocator.construct(_data + i, other[i]);
+        }
+
+        void assign(size_type count, const_reference value) {
+            /* No need to reallocate memory - just wipe old data and
+             * place value's copy to vector data
+             */
+            if (count <= _capacity) {
+                wipeData();
+                for (int i = 0; i < count; ++i)
+                    _data[i] = T(value);
+                return;
+            }
+
+            allocate(count);
+
+            for (int i = 0; i < count; ++i)
+                _allocator.construct(_data + i, value);
+            _size = count;
+        }
+
+        allocator_type get_allocator() {
+            return _allocator;
+        };
 
         /*
          * Element access
          */
 
-        reference at(size_type pos);
-        const reference at(size_type pos) const;
+        reference at(size_type pos) {
+            if (pos >= _size) {
+                std::string error_msg = generateOutOfRangeStr(pos, _size);
+                throw std::out_of_range(error_msg);
+            }
+            return _data[pos];
+        }
 
-        reference operator[](size_type pos);
-        const_reference operator[](size_type pos) const;
+        const reference at(size_type pos) const {
+            if (pos >= _size) {
+                std::string error_msg = generateOutOfRangeStr(pos, _size);
+                throw std::out_of_range(error_msg);
+            }
+            return _data[pos];
+        }
 
-        reference front();
-        const_reference front() const;
+        reference operator[](size_type pos) { return _data[pos]; }
+        const_reference operator[](size_type pos) const { return _data[pos]; }
 
-        reference back();
-        const_reference back() const;
+        reference front() { return _data[0]; }
+        const_reference front() const { return _data[0]; }
 
-        T* data();
-        const T* data() const;
+        reference back() { return _data[_size - 1]; }
+        const_reference back() const { return _data[_size - 1]; }
+
+        T* data() { return _data; }
+        const T* data() const { return _data; }
 
         /*
          * Iterators
          */
 
-        iterator begin();
-        iterator end();
-        iterator rbegin();
-        iterator rend();
+        iterator begin() {
+            iterator result(_data);
+            return result;
+        }
+
+        iterator end() {
+            vector<T, Allocator>::iterator result(_data + _size);
+            return result;
+        }
+
+        iterator rbegin() {
+            iterator result(_data + _size);
+            return result;
+        }
+
+        iterator rend() {
+            iterator result(_data);
+            return result;
+        }
 
         /*
          * Capacity
          */
 
-        bool empty() const;
+        bool empty() const { return _size == 0; }
 
-        size_type size() const;
+        size_type size() const { return _size; }
 
-        size_type max_size() const;
+        size_type max_size() const {
+            return std::numeric_limits<difference_type>::max();
+        }
 
-        void reserve(size_type new_cap);
+        void reserve(size_type new_cap) {
+            if (new_cap <= _capacity)
+                return;
+            reallocateToSize(new_cap);
+        }
 
-        size_type capacity() const;
+        size_type capacity() const { return _capacity; }
 
         /*
          * Modifiers
          */
 
-        void clear();
+        void clear() {
+            wipeData();
+        }
 
         iterator insert(iterator pos, const_reference value);
         void insert(iterator pos, size_type count, const_reference value);
@@ -220,11 +288,35 @@ namespace ft {
         iterator erase(iterator pos);
         iterator erase(iterator first, iterator last);
 
-        void push_back(const_reference value );
+        void push_back(const_reference value) {
+            if (_size == _capacity)
+                reallocateDouble();
+            _allocator.construct(_data + _size, value);
+            _size++;
+        }
 
-        void pop_back();
+        void pop_back() {
+            if (_size <= 0) {
+                return;
+            }
+            _allocator.destroy(_data[_size - 1]);
+            _size--;
+        }
 
-        void resize(size_type count);
+        void resize(size_type count) {
+            if (count < _size) {
+                reallocateToSize(count);
+                return;
+            }
+
+            size_type old_size = _size;
+            reallocateToSize(count);
+            T _default;
+            for (size_type i = old_size ; i < count; ++i)
+                _allocator.construct(_data + i, _default);
+            _size = count;
+            _capacity = count;
+        }
         void resize(size_type count, value_type value = T());
 
         void swap(vector& other);
@@ -234,30 +326,79 @@ namespace ft {
         size_t _capacity;
         std::allocator<T> _allocator;
 
+        std::string generateOutOfRangeStr(size_type pos, size_type size) {
+            std::string _size_str;
+            std::string pos_str;
+            std::stringstream ss;
+
+            ss << size;
+            ss >> _size_str;
+            ss.clear();
+            ss << pos;
+            ss >> pos_str;
+
+            std::string result = "Error: vector size: " + _size_str + ", but try get " + pos_str + " element.";
+
+            return result;
+        }
+
+        /* Destruct all objects, set size to 0
+         * Keep allocated memory, don't affect capacity
+         * Don't modify content in the data memory
+         * */
+        void wipeData() {
+            destructPlacementObjects();
+            _size = 0;
+        }
+
         void allocate(size_t element_count) {
-            if (_data)
-                delete [] _data;
-            _data = static_cast<T*> (operator new [] (sizeof(T) * element_count));
+            if (_data) {
+                destructPlacementObjects();
+                _allocator.deallocate(_data, _capacity);
+            }
+            _data = _allocator.allocate(element_count);
             _size = 0;
             _capacity = element_count;
         }
 
-        void reallocate() {
+        void reallocateToSize(size_type element_count) {
+            /* If element_count zero - just deallocate memory and destruct objects */
+            if (element_count == 0 && _data) {
+                destructPlacementObjects();
+                _allocator.deallocate(_data, _capacity);
+                _data = 0;
+            }
+
             /* Allocate new data */
-            T* new_data = static_cast<T*> (_allocator.allocate(_capacity * 2));
+            T* new_data = static_cast<T*> (_allocator.allocate(element_count));
+
+            /* Determinate count elements to copy (possible case - passed to function
+             * element_count less, than _size)
+             */
+            size_type copy_elements = std::min(element_count, _size);
 
             /* Copy old elements to new allocated memory */
-            for (int i = 0; i < _size; ++i)
+            for (int i = 0; i < copy_elements; ++i)
                 _allocator.construct(new_data + i, _data[i]);
 
             /* Destruct old elements */
             destructPlacementObjects();
 
             /* Deallocate old memory */
-            _allocator.deallocate(_capacity);
+            _allocator.deallocate(_data, _capacity);
 
-            /* Update size and capacity based on new allocated memory */
-            _capacity *= 2;
+            /* Update capacity based on new allocated memory */
+            _capacity = element_count;
+
+            /* Update size based on copied elements */
+            _size = copy_elements;
+
+            /* Replace pointer in vector to new data */
+            _data = new_data;
+        }
+
+        void reallocateDouble() {
+            reallocateToSize(_capacity * 2);
         }
 
         void destructPlacementObjects() {
@@ -291,7 +432,6 @@ namespace ft {
     vector_non_member_operator(>=)
 #undef vector_non_member_operator
     template< class T, class Alloc > void swap( vector<T,Alloc>& lhs, vector<T,Alloc>& rhs );
-
 }
 
 
