@@ -158,12 +158,6 @@ namespace ft {
                 _allocator.construct(_data + i, value);
         };
 
-        vector(size_type n, const_reference other) : _size(n), _capacity(n), _allocator() {
-            allocate(n);
-            for (int i = 0; i < n; ++i)
-                _allocator.construct(_data + i, other);
-        };
-
         template< class InputIt >
         vector( InputIt first, InputIt last, const Allocator& alloc = Allocator() ) : _allocator(alloc) {
             size_type elements_count = std::distance(first, last);
@@ -171,13 +165,13 @@ namespace ft {
             size_type _counter = 0;
             _size = _capacity = elements_count;
             for (InputIt it = first; first != last; it ++)
-                _allocator.construct(_data[_counter++], *it);
+                _allocator.construct(_data + _counter++, *it);
         }
 
         vector( const vector& other ) : _size(other._size), _capacity(other._capacity), _allocator(other._allocator), _data(0) {
             allocate(other._capacity);
             for (int i = 0; i < other._size; ++i)
-                _allocator.construct(_data[i], other[i]);
+                _allocator.construct(_data + i, other[i]);
         }
 
         ~vector() {
@@ -187,8 +181,10 @@ namespace ft {
         vector<T, Allocator>& operator=(const vector& other) {
             if (&other == this)
                 return *this;
-            reallocateToSize(other.size());
-            wipeData();
+            reallocateToSize(0);
+            allocate(other._capacity);
+            _size = other._size;
+            _capacity = other._capacity;
             for (int i = 0; i < other.size(); ++i)
                 _allocator.construct(_data + i, other[i]);
         }
@@ -394,6 +390,10 @@ namespace ft {
                 _allocator.deallocate(_data, _capacity);
                 _data = 0;
             }
+
+            /* Reallocation doesn't work with uninitialized data! */
+            if (!_data)
+                throw std::runtime_error("Cannot reallocate vector from zero pointer!");
 
             /* Allocate new data */
             T* new_data = static_cast<T*> (_allocator.allocate(element_count));
