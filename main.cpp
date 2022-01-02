@@ -30,26 +30,11 @@ void print_vector_status(T & vec) {
 }
 
 int main(int argc, char** argv) {
-    std::vector<A> veca;
-    std::cout << veca.data() << std::endl;
-    A a;
+    std::vector<int> sveci;
+    sveci.push_back(1);
+    print_vector_status(sveci);
 
-    std::vector<A> vecb(10, a);
 
-    veca = vecb;
 
-    ft::vector<int> vecc;
-
-    for (int i = 0; i < 10; ++i) {
-        veca[i].num = i;
-        vecc.push_back(veca[i].num);
-    }
-
-    for (int i = 0; i < 10; ++i) {
-        std::cout << vecc.at(i) << " " << vecc.at(i) << std::endl;
-    }
-
-    print_vector_status(vecc);
-    std::cout << "iterator size = " << sizeof(ft::vector<int>::iterator) << " std::iterator " << sizeof (std::vector<int>::iterator ) << std::endl;
     return 0;
 }

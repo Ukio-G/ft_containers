@@ -149,11 +149,13 @@ namespace ft {
         };
 
         vector() : _size(0), _capacity(0), _allocator(), _data(0) { };
-        vector(size_type n) : _size(n), _capacity(n), _allocator() {
-            T _default;
+
+        explicit vector( const Allocator& alloc ) : _size(0), _capacity(0), _allocator(alloc), _data(0)  { }
+
+        explicit vector(size_type n, const T& value = T(), const Allocator& alloc = Allocator()) : _size(n), _capacity(n), _allocator(alloc) {
             allocate(n);
             for (int i = 0; i < n; ++i)
-                _allocator.construct(_data + i, _default);
+                _allocator.construct(_data + i, value);
         };
 
         vector(size_type n, const_reference other) : _size(n), _capacity(n), _allocator() {
@@ -161,6 +163,22 @@ namespace ft {
             for (int i = 0; i < n; ++i)
                 _allocator.construct(_data + i, other);
         };
+
+        template< class InputIt >
+        vector( InputIt first, InputIt last, const Allocator& alloc = Allocator() ) : _allocator(alloc) {
+            size_type elements_count = std::distance(first, last);
+            allocate(elements_count);
+            size_type _counter = 0;
+            _size = _capacity = elements_count;
+            for (InputIt it = first; first != last; it ++)
+                _allocator.construct(_data[_counter++], *it);
+        }
+
+        vector( const vector& other ) : _size(other._size), _capacity(other._capacity), _allocator(other._allocator), _data(0) {
+            allocate(other._capacity);
+            for (int i = 0; i < other._size; ++i)
+                _allocator.construct(_data[i], other[i]);
+        }
 
         ~vector() {
             reallocateToSize(0);
@@ -281,9 +299,17 @@ namespace ft {
             wipeData();
         }
 
-        iterator insert(iterator pos, const_reference value);
-        void insert(iterator pos, size_type count, const_reference value);
-        template< class InputIt > void insert(iterator pos, InputIt first, InputIt last);
+        iterator insert(iterator pos, const_reference value) {
+
+        }
+
+        void insert(iterator pos, size_type count, const_reference value) {
+
+        }
+
+        template< class InputIt > void insert(iterator pos, InputIt first, InputIt last) {
+
+        }
 
         iterator erase(iterator pos);
         iterator erase(iterator first, iterator last);
@@ -321,10 +347,10 @@ namespace ft {
 
         void swap(vector& other);
     private:
-        T* _data;
         size_t _size;
         size_t _capacity;
         std::allocator<T> _allocator;
+        T* _data;
 
         std::string generateOutOfRangeStr(size_type pos, size_type size) {
             std::string _size_str;
