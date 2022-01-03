@@ -32,13 +32,22 @@ void print_vector_status(T & vec) {
 
 int main(int argc, char** argv) {
     ft::vector<int> vec;
-    for (int i = 0; i < 10; ++i) {
-        vec.push_back(i);
-    }
+    vec.reserve(10);
+
+    vec.push_back(1);
+    vec.push_back(2);
+    vec.push_back(4);
+    vec.push_back(5);
+    vec.push_back(6);
+    vec.push_back(7);
+
     print_vector_status(vec);
 
-    vec[3] = 10;
+    ft::vector<int>::iterator a = vec.begin() + 2;
 
+    vec.insert(a, 3);
+    vec.insert(vec.end(), 8);
+    vec.insert(vec.end(), 9);
 
     print_vector_status(vec);
 

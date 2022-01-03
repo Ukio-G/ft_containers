@@ -7,6 +7,7 @@
 #include <stdexcept>
 #include <sstream>
 #include <limits>
+#include <algorithm>
 
 namespace ft {
 
@@ -102,7 +103,7 @@ namespace ft {
                 return *this;
             }
 
-            iterator operator+(difference_type n) {
+            iterator operator+(int n) {
                 iterator result  = *this;
                 result.m_data_pointer += n;
                 return result;
@@ -282,7 +283,8 @@ namespace ft {
         void reserve(size_type new_cap) {
             if (new_cap <= _capacity)
                 return;
-            reallocateToSize(new_cap);
+            size_type need_to_append = new_cap - _capacity;
+            appendMemoryIfNeededForElements(need_to_append);
         }
 
         size_type capacity() const { return _capacity; }
@@ -296,8 +298,10 @@ namespace ft {
         }
 
         iterator insert(iterator pos, const_reference value) {
-            appendMemoryIfNeededForElements(1);
-            
+            size_type offset = pos - begin();
+            push_back(value);
+            std::rotate(begin() + offset, end() - 1, end());
+            return begin() + offset;
         }
 
         void insert(iterator pos, size_type count, const_reference value) {
@@ -475,9 +479,9 @@ namespace ft {
         *a = *b;
     }
 
-    template <typename T> typename vector<T>::iterator operator+(typename vector<T>::iterator::difference_type n, typename vector<T>::iterator &it) {
-        return it - n;
-    }
+//    template <typename T> typename vector<T>::iterator operator+(typename vector<T>::iterator::difference_type n, typename vector<T>::iterator &it) {
+//        return it - n;
+//    }
 
     /*
  * Vector non member functions and operators declarations
