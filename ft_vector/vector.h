@@ -57,7 +57,6 @@ namespace ft {
                 return *this;
             }
 
-            //  is incrementable
             iterator operator++(int) {
                 iterator &result = *this;
                 m_data_pointer++;
@@ -185,7 +184,7 @@ namespace ft {
             allocate(other._capacity);
             _size = other._size;
             _capacity = other._capacity;
-            for (int i = 0; i < other.size(); ++i)
+            for (int i = 0; i < other._size; ++i)
                 _allocator.construct(_data + i, other[i]);
         }
 
@@ -196,7 +195,8 @@ namespace ft {
             if (count <= _capacity) {
                 wipeData();
                 for (int i = 0; i < count; ++i)
-                    _data[i] = T(value);
+                    _allocator.construct(_data + i, value);
+                _size = count;
                 return;
             }
 
@@ -296,14 +296,17 @@ namespace ft {
         }
 
         iterator insert(iterator pos, const_reference value) {
-
+            appendMemoryIfNeededForElements(1);
+            
         }
 
         void insert(iterator pos, size_type count, const_reference value) {
+            appendMemoryIfNeededForElements(count);
 
         }
 
         template< class InputIt > void insert(iterator pos, InputIt first, InputIt last) {
+            appendMemoryIfNeededForElements(std::distance(first, last));
 
         }
 
@@ -311,8 +314,7 @@ namespace ft {
         iterator erase(iterator first, iterator last);
 
         void push_back(const_reference value) {
-            if (_size == _capacity)
-                reallocateDouble();
+            appendMemoryIfNeededForElements(1);
             _allocator.construct(_data + _size, value);
             _size++;
         }
@@ -325,21 +327,29 @@ namespace ft {
             _size--;
         }
 
-        void resize(size_type count) {
+
+        /**
+         * Resizes the container to contain count elements.
+         * If the current size is greater than count, the container is reduced to its first count elements.
+         * If the current size is less than count.
+         * @param count
+         */
+        void resize(size_type count, T value = T()) {
+            if (count == _size)
+                return;
+
             if (count < _size) {
                 reallocateToSize(count);
                 return;
             }
 
             size_type old_size = _size;
-            reallocateToSize(count);
-            T _default;
+            appendMemoryIfNeededForElements(count - _size);
             for (size_type i = old_size ; i < count; ++i)
-                _allocator.construct(_data + i, _default);
+                _allocator.construct(_data + i, value);
             _size = count;
             _capacity = count;
         }
-        void resize(size_type count, value_type value = T());
 
         void swap(vector& other);
     private:
@@ -373,6 +383,27 @@ namespace ft {
             _size = 0;
         }
 
+        /*
+         * Call this before add elements to vector
+         * Check, what we can do this - otherwise allocate/reallocate
+         * memory
+         */
+        void appendMemoryIfNeededForElements(size_type element_count) {
+            size_type _available = _capacity - _size;
+
+            if (!_data) {
+                allocate(element_count);
+                return;
+            }
+
+            if (element_count > _available) {
+                if (element_count == 1)
+                    reallocateDouble();
+                else
+                    reallocateToSize(_capacity + (element_count - _available));
+            }
+        }
+
         void allocate(size_t element_count) {
             if (_data) {
                 destructPlacementObjects();
@@ -389,6 +420,8 @@ namespace ft {
                 destructPlacementObjects();
                 _allocator.deallocate(_data, _capacity);
                 _data = 0;
+                _capacity = _size = 0;
+                return;
             }
 
             /* Reallocation doesn't work with uninitialized data! */
