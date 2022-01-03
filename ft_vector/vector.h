@@ -10,6 +10,7 @@
 #include <limits>
 #include <algorithm>
 #include "ft_meta_cpp/reverse_iterator.hpp"
+#include "ft_meta_cpp/lexicographical_compare.hpp"
 
 namespace ft {
 
@@ -240,22 +241,22 @@ namespace ft {
          * Iterators
          */
 
-        iterator begin() {
+        iterator begin() const {
             iterator result(_data);
             return result;
         }
 
-        iterator end() {
+        iterator end() const {
             iterator result(_data + _size);
             return result;
         }
 
-        ft::reverse_iterator<iterator> rbegin() {
+        ft::reverse_iterator<iterator> rbegin() const {
             reverse_iterator<iterator> result = end() - 1;
             return result;
         }
 
-        ft::reverse_iterator<iterator> rend() {
+        ft::reverse_iterator<iterator> rend() const {
             reverse_iterator<iterator> result = begin() - 1;
             return result;
         }
@@ -309,7 +310,18 @@ namespace ft {
             return begin() + offset;
         }
 
-        iterator erase(iterator first, iterator last);
+        iterator erase(iterator first, iterator last) {
+            iterator result = 0;
+            if (first == last)
+                return first;
+            size_type elements_count = std::distance(first, last);
+            size_type offset = first - begin();
+            for (iterator it = first; it != last; it++)
+                _allocator.destroy(&(*it));
+            std::rotate(first, last, end());
+            _size -= elements_count;
+            return begin() + offset;
+        }
 
         void push_back(const_reference value) {
             appendMemoryIfNeededForElements(1);
@@ -324,7 +336,6 @@ namespace ft {
             _allocator.destroy(_data[_size - 1]);
             _size--;
         }
-
 
         /**
          * Resizes the container to contain count elements.
@@ -349,7 +360,12 @@ namespace ft {
             _capacity = count;
         }
 
-        void swap(vector& other);
+        void swap(vector& other) {
+            std::swap(_data, other._data);
+            std::swap(_capacity, other._capacity);
+            std::swap(_size, other._size);
+            std::swap(_allocator, other._allocator);
+        }
     private:
         size_t _size;
         size_t _capacity;
@@ -421,19 +437,22 @@ namespace ft {
             return result;
         }
 
-        /* Destruct all objects, set size to 0
+        /**
+         * Destruct all objects, set size to 0
          * Keep allocated memory, don't affect capacity
          * Don't modify content in the data memory
-         * */
+         */
         void wipeData() {
             destructPlacementObjects();
             _size = 0;
         }
 
-        /*
+        /**
          * Call this before add elements to vector
          * Check, what we can do this - otherwise allocate/reallocate
          * memory
+         *
+         * @param element_count - check that we can place this count of object to the vector
          */
         void appendMemoryIfNeededForElements(size_type element_count) {
             size_type _available = _capacity - _size;
@@ -451,13 +470,27 @@ namespace ft {
             }
         }
 
+        /**
+         * Allocate new memory and destroy all old objects.
+         * Doesn't reallocate contained objects to allocated memory.
+         * Doesn't construct default objects on new allocated memory.
+         *
+         * @param element_count - allocate memory enough for element_count elements.
+         */
         void allocate(size_t element_count) {
+            /* If have data - destroy objects and free memory */
             if (_data) {
                 destructPlacementObjects();
                 _allocator.deallocate(_data, _capacity);
             }
+
+            /* Allocate new memory */
             _data = _allocator.allocate(element_count);
+
+            /* Update size to zero - no elements created yet */
             _size = 0;
+
+            /* Update capacity to element_count */
             _capacity = element_count;
         }
 
@@ -513,32 +546,66 @@ namespace ft {
         }
     };
 
-    using std::swap;
+    /*
+     * Vector non member functions and operators
+     */
 
     template<typename T>
-    void swap(typename vector<T>::iterator& a, typename vector<T>::iterator& b) {
-        T tmp = *a;
-        *b = tmp;
-        *a = *b;
+    void swap(vector<T>& a,vector<T>& b) {
+        a.swap(b);
     }
 
     template <typename T> typename vector<T>::iterator operator+(typename vector<T>::iterator::difference_type n, typename vector<T>::iterator &it) {
         return it - n;
     }
 
-    /*
- * Vector non member functions and operators declarations
- */
-#define vector_non_member_operator(op) template <class T, class Alloc> bool operator op(const vector<T, Alloc>& lhs, const vector<T, Alloc>& rhs);
-    vector_non_member_operator(==)
-    vector_non_member_operator(!=)
-    vector_non_member_operator(<)
-    vector_non_member_operator(<=)
-    vector_non_member_operator(>)
-    vector_non_member_operator(>=)
-#undef vector_non_member_operator
-    template< class T, class Alloc > void swap( vector<T,Alloc>& lhs, vector<T,Alloc>& rhs );
+    template< class T, class Alloc >
+    bool operator==( const vector<T,Alloc>& lhs,
+                     const vector<T,Alloc>& rhs ) {
+        if (lhs.size() != rhs.size())
+            return false;
+        for (int i = 0; i < lhs.size(); ++i)
+            if (lhs[i] != rhs[i])
+                return false;
+        return true;
+    }
+
+    template< class T, class Alloc >
+    bool operator!=( const vector<T,Alloc>& lhs,
+                     const vector<T,Alloc>& rhs ) {
+        return !(lhs == rhs);
+    }
+
+    template< class T, class Alloc >
+    bool operator<( const vector<T,Alloc>& lhs,
+                    const vector<T,Alloc>& rhs ) {
+        return ft::lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
+    }
+
+    template< class T, class Alloc >
+    bool operator<=( const vector<T,Alloc>& lhs,
+                    const vector<T,Alloc>& rhs ) {
+        return ft::lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(), rhs.end()) || (lhs == rhs);
+    }
+
+    template< class T, class Alloc >
+    bool operator>( const vector<T,Alloc>& lhs,
+                    const vector<T,Alloc>& rhs ) {
+        return ft::lexicographical_compare(rhs.begin(), rhs.end(), lhs.begin(), lhs.end());
+    }
+
+    template< class T, class Alloc >
+    bool operator>=( const vector<T,Alloc>& lhs,
+                    const vector<T,Alloc>& rhs ) {
+        return ft::lexicographical_compare(rhs.begin(), rhs.end(), lhs.begin(), lhs.end()) || (lhs == rhs);
+    }
 }
 
+namespace std {
+    template<typename T, class Alloc>
+    void swap(ft::vector<T, Alloc> & a,ft::vector<T, Alloc> & b) {
+        a.swap(b);
+    }
+}
 
 #endif
