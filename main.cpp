@@ -48,5 +48,16 @@ int main(int argc, char** argv) {
     vec.insert(vec.begin() + 1, 100501);
 
     print_vector_status(vec);
+
+    vec.erase(vec.begin());
+    vec.erase(vec.begin());
+    vec.erase(vec.end() - 1);
+    vec.erase(vec.end() - 1);
+    vec.erase(vec.end() - 1);
+    vec.erase(vec.end() - 1);
+    vec.erase(vec.end() - 1);
+
+    print_vector_status(vec);
+
     return 0;
 }

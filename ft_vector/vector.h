@@ -311,7 +311,14 @@ namespace ft {
             insert_dispatch(pos, first, last, Integral());
         }
 
-        iterator erase(iterator pos);
+        iterator erase(iterator pos) {
+            size_type offset = pos - begin();
+            std::rotate(pos, pos + 1, end());
+            _allocator.destroy(_data + _size - 1);
+            _size--;
+            return begin() + offset;
+        }
+
         iterator erase(iterator first, iterator last);
 
         void push_back(const_reference value) {
