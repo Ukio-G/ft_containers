@@ -103,7 +103,7 @@ namespace ft {
                 return *this;
             }
 
-            iterator operator+(int n) {
+            iterator operator+(difference_type n) {
                 iterator result  = *this;
                 result.m_data_pointer += n;
                 return result;
@@ -479,9 +479,9 @@ namespace ft {
         *a = *b;
     }
 
-//    template <typename T> typename vector<T>::iterator operator+(typename vector<T>::iterator::difference_type n, typename vector<T>::iterator &it) {
-//        return it - n;
-//    }
+    template <typename T> typename vector<T>::iterator operator+(typename vector<T>::iterator::difference_type n, typename vector<T>::iterator &it) {
+        return it - n;
+    }
 
     /*
  * Vector non member functions and operators declarations
