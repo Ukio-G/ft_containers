@@ -32,24 +32,21 @@ void print_vector_status(T & vec) {
 
 int main(int argc, char** argv) {
     ft::vector<int> vec;
-    vec.reserve(10);
 
-    vec.push_back(1);
-    vec.push_back(2);
-    vec.push_back(4);
-    vec.push_back(5);
-    vec.push_back(6);
-    vec.push_back(7);
+    std::vector<int> sveci;
+    std::vector<int> sveci2;
 
-    print_vector_status(vec);
+    for (int i = 0; i < 10; ++i) {
+        sveci.push_back(i);
+    }
 
-    ft::vector<int>::iterator a = vec.begin() + 2;
-
-    vec.insert(a, 3);
-    vec.insert(vec.end(), 8);
-    vec.insert(vec.end(), 9);
+    vec.insert(vec.begin(), 100500);
+    vec.insert(vec.end(), sveci.begin(), sveci.end());
 
     print_vector_status(vec);
+    vec.insert(vec.end(), 5, 6);
+    vec.insert(vec.begin() + 1, 100501);
 
+    print_vector_status(vec);
     return 0;
 }

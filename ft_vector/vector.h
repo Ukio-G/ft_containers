@@ -4,10 +4,12 @@
 #include <memory>
 #include <cstddef>
 #include <iterator_traits.hpp>
+#include "ft_meta_cpp/type_traits.hpp"
 #include <stdexcept>
 #include <sstream>
 #include <limits>
 #include <algorithm>
+#include <vector>
 
 namespace ft {
 
@@ -304,14 +306,9 @@ namespace ft {
             return begin() + offset;
         }
 
-        void insert(iterator pos, size_type count, const_reference value) {
-            appendMemoryIfNeededForElements(count);
-
-        }
-
         template< class InputIt > void insert(iterator pos, InputIt first, InputIt last) {
-            appendMemoryIfNeededForElements(std::distance(first, last));
-
+            typedef typename is_integer<InputIt>::type Integral;
+            insert_dispatch(pos, first, last, Integral());
         }
 
         iterator erase(iterator pos);
@@ -361,6 +358,40 @@ namespace ft {
         size_t _capacity;
         std::allocator<T> _allocator;
         T* _data;
+
+        template<typename Integer, class It> void insert_dispatch(It pos, Integer n, Integer val, true_type)
+        { fill_insert(pos, n, val); }
+
+        template<typename InputIt, class It> void insert_dispatch(It pos, InputIt first, InputIt last, false_type)
+        { range_insert(pos, first, last); }
+
+        void fill_insert(iterator pos, size_type count, const_reference value) {
+            size_type offset = pos - begin();
+            appendMemoryIfNeededForElements(count);
+
+            T* placement_data = _data + _size;
+            for (int i = 0; i < count; ++i)
+                _allocator.construct(placement_data + i, value);
+            _size += count;
+
+            std::rotate(begin() + offset, end() - 1, end());
+        }
+
+        template<class InputIt>
+        void range_insert(iterator pos, InputIt first, InputIt last) {
+            size_type elements_count = std::distance(first, last);
+            size_type offset = pos - begin();
+            appendMemoryIfNeededForElements(elements_count);
+
+            T* placement_data = _data + _size;
+            size_type counter = 0;
+            for (InputIt it = first; it != last; it++)
+                _allocator.construct(placement_data + counter++, *it);
+            _size += elements_count;
+
+            std::rotate(begin() + offset, end() - elements_count, end());
+        }
+
 
         std::string generateOutOfRangeStr(size_type pos, size_type size) {
             std::string _size_str;
