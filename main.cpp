@@ -41,5 +41,10 @@ int main(int argc, char** argv) {
     ft::vector<int> vec2(5, 10);
     print_vector_status(vec);
     print_vector_status(vec2);
+    typedef ft::reverse_iterator<ft::vector<int>::iterator> rit;
+    for (rit it = vec.rbegin(); it != vec.rend() ; it++) {
+        std::cout << "[" << std::distance(vec.rbegin(), it) << "] "<< *it << std::endl;
+    }
+
     return 0;
 }

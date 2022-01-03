@@ -9,7 +9,7 @@
 #include <sstream>
 #include <limits>
 #include <algorithm>
-#include <vector>
+#include "ft_meta_cpp/reverse_iterator.hpp"
 
 namespace ft {
 
@@ -154,24 +154,6 @@ namespace ft {
 
         explicit vector( const Allocator& alloc ) : _size(0), _capacity(0), _allocator(alloc), _data(0)  { }
 
-        /*
-        explicit vector(size_type n, const T& value = T(), const Allocator& alloc = Allocator()) : _size(n), _capacity(n), _allocator(alloc) {
-            allocate(n);
-            for (int i = 0; i < n; ++i)
-                _allocator.construct(_data + i, value);
-        };
-
-        template< class InputIt >
-        vector( InputIt first, InputIt last, const Allocator& alloc = Allocator() ) : _allocator(alloc) {
-            size_type elements_count = std::distance(first, last);
-            allocate(elements_count);
-            size_type _counter = 0;
-            _size = _capacity = elements_count;
-            for (InputIt it = first; first != last; it ++)
-                _allocator.construct(_data + _counter++, *it);
-        }
-         */
-
         template< class InputIt >
         vector( InputIt first, InputIt last, const Allocator& alloc = Allocator() ) : _size(0), _capacity(0), _allocator(alloc), _data(0) {
             typedef typename is_integer<InputIt>::type Integer;
@@ -264,17 +246,17 @@ namespace ft {
         }
 
         iterator end() {
-            vector<T, Allocator>::iterator result(_data + _size);
-            return result;
-        }
-
-        iterator rbegin() {
             iterator result(_data + _size);
             return result;
         }
 
-        iterator rend() {
-            iterator result(_data);
+        ft::reverse_iterator<iterator> rbegin() {
+            reverse_iterator<iterator> result = end() - 1;
+            return result;
+        }
+
+        ft::reverse_iterator<iterator> rend() {
+            reverse_iterator<iterator> result = begin() - 1;
             return result;
         }
 
