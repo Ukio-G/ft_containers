@@ -31,33 +31,15 @@ void print_vector_status(T & vec) {
 }
 
 int main(int argc, char** argv) {
-    ft::vector<int> vec;
-
     std::vector<int> sveci;
-    std::vector<int> sveci2;
 
     for (int i = 0; i < 10; ++i) {
         sveci.push_back(i);
     }
 
-    vec.insert(vec.begin(), 100500);
-    vec.insert(vec.end(), sveci.begin(), sveci.end());
-
+    ft::vector<int> vec(sveci.begin(), sveci.end());
+    ft::vector<int> vec2(5, 10);
     print_vector_status(vec);
-    vec.insert(vec.end(), 5, 6);
-    vec.insert(vec.begin() + 1, 100501);
-
-    print_vector_status(vec);
-
-    vec.erase(vec.begin());
-    vec.erase(vec.begin());
-    vec.erase(vec.end() - 1);
-    vec.erase(vec.end() - 1);
-    vec.erase(vec.end() - 1);
-    vec.erase(vec.end() - 1);
-    vec.erase(vec.end() - 1);
-
-    print_vector_status(vec);
-
+    print_vector_status(vec2);
     return 0;
 }

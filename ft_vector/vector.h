@@ -154,6 +154,7 @@ namespace ft {
 
         explicit vector( const Allocator& alloc ) : _size(0), _capacity(0), _allocator(alloc), _data(0)  { }
 
+        /*
         explicit vector(size_type n, const T& value = T(), const Allocator& alloc = Allocator()) : _size(n), _capacity(n), _allocator(alloc) {
             allocate(n);
             for (int i = 0; i < n; ++i)
@@ -168,6 +169,13 @@ namespace ft {
             _size = _capacity = elements_count;
             for (InputIt it = first; first != last; it ++)
                 _allocator.construct(_data + _counter++, *it);
+        }
+         */
+
+        template< class InputIt >
+        vector( InputIt first, InputIt last, const Allocator& alloc = Allocator() ) : _size(0), _capacity(0), _allocator(alloc), _data(0) {
+            typedef typename is_integer<InputIt>::type Integer;
+            constructor_dispatch(first, last, Integer());
         }
 
         vector( const vector& other ) : _size(other._size), _capacity(other._capacity), _allocator(other._allocator), _data(0) {
@@ -365,6 +373,21 @@ namespace ft {
         size_t _capacity;
         std::allocator<T> _allocator;
         T* _data;
+
+        template<typename Integer> void constructor_dispatch(Integer count, Integer value, true_type)
+        { fill_construct(count, value); }
+
+        template<typename InputIt> void constructor_dispatch(InputIt start, InputIt end, false_type)
+        { range_construct(start, end); }
+
+        void fill_construct(size_type count, const_reference value) {
+            fill_insert(begin(), count, value);
+        }
+
+        template<class InputIt>
+        void range_construct(InputIt start, InputIt end) {
+            range_insert(begin(), start, end);
+        }
 
         template<typename Integer, class It> void insert_dispatch(It pos, Integer n, Integer val, true_type)
         { fill_insert(pos, n, val); }
