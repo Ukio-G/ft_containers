@@ -1,39 +1,29 @@
-#ifndef FT_CONTAINERS_FT_MAP_H
-#define FT_CONTAINERS_FT_MAP_H
+#ifndef AVL_TREE_HPP
+#define AVL_TREE_HPP
 
-
-#include <functional>
-#include <ft_pair/pair.hpp>
-#include <memory>
-#include <cstddef>
 #include <stdexcept>
-#include <sstream>
-#include <limits>
-#include <algorithm>
+#include "ft_pair/pair.hpp"
+#include "ft_map/map.h"
 #include <iostream>
-// #include "avl_tree.hpp"
+#include <memory>
+
 
 namespace ft {
-
     enum NodeDirectory {
         LeftDir, RightDir, NoneDir
     };
 
 
-    template<class K, class V, class Owner>
+    template<class K, class V>
     class Tree {
     public:
-
-        typedef typename Owner::key_compare Comp;
-        typedef typename Owner::allocator_type Allocator;
-
         Tree(const Tree & other) :
-                _parent(other.parent), _left(other._left), _right(other._right), _height(other._height), _owner(other._owner)
+        _parent(other.parent), _left(other._left), _right(other._right), _height(other._height)
         {}
 
-        Tree(Tree *parent, pair<K, V> value) : _parent(parent), _left(0), _right(0), _pair(value), _height(1), _owner(parent->_owner) {}
+        Tree(Tree *parent, pair<K, V> value) : _parent(parent), _left(0), _right(0), _owner() ,_pair(value), _height(1) {}
 
-        Tree(Owner & owner, pair<K, V> value) : _parent(0), _left(0), _right(0), _pair(value), _height(1), _owner(owner) {}
+        Tree(pair<K, V> value) : _parent(0), _left(0), _right(0), _pair(value), _height(1) {}
 
         Tree *findRoot() {
             if (_parent == 0)
@@ -47,17 +37,21 @@ namespace ft {
             return tmp_parent;
         }
 
-        Tree<K, V, Owner>* insert(const pair<K, V> & p) {
-            Comp c = _owner.value_comp();
+        Tree<K, V>* insert(const pair<K, V> & p) {
+            Comp & c = _owner.value_comp();
             Tree *&appendNode = (c(this->_pair.first, p.first)) ? _right : _left;
+            if (appendNode == 0 || appendNode->getData().first == p.first) {
 
-            if (appendNode == 0) {
-                Allocator allocator = _owner.get_allocator();
+                if (appendNode->getData().first == p.first) {
+                    std::cout << "replace" << std::endl;
+                    _pair.second = p.second;
+                    return appendNode;
+                }
 
-                appendNode = new Tree<K, V, Owner>(this, p);
-                appendNode->_pair.~pair();
-                allocator.construct(&(appendNode->_pair), p);
+                _owner::allocator_type allocator = _owner.
 
+                appendNode = allocator.allocate(1);
+                allocator.construct(appendNode, this, p);
                 appendNode->recursiveHeightUpdate();
                 appendNode->recursiveBalance();
 
@@ -146,7 +140,7 @@ namespace ft {
         Tree * _parent;
         Tree * _right;
 
-        Owner & _owner;
+        map<K, V, Comp, Allocator> & _owner;
 
         pair<K, V> _pair;
         int _height;
@@ -314,71 +308,6 @@ namespace ft {
             root->recursiveHeightUpdate();
         }
     };
-
-    template<
-            class Key,
-            class T,
-            class Compare = std::less <Key>,
-            class Allocator = std::allocator < ft::pair<Key, T> >
-    >
-    class map {
-    public:
-        typedef Key key_type;
-        typedef T mapped_type;
-        typedef pair<const Key, T> value_type;
-        typedef std::size_t size_type;
-        typedef std::ptrdiff_t difference_type;
-        typedef Compare key_compare;
-        typedef Allocator allocator_type;
-        typedef value_type& reference;
-        typedef const value_type& const_reference;
-        typedef typename Allocator::pointer pointer;
-        typedef typename Allocator::const_pointer const_pointer;
-        typedef Tree<Key, T, ft::map<Key, T, Compare, Allocator> > node_type;
-
-        T& operator[](Key k) {
-            if (!root)
-                return checkRoot(k)->getData().second;
-            node_type * node;
-            node = root->find(k);
-            if (node) {
-                return node->getData().second;
-            }
-            ft::pair<Key, T> p = ft::make_pair(k, T());
-            node = root->insert(p);
-            root = root->findRoot();
-            return node->getData().second;
-        }
-
-
-        map() : root(0) {}
-
-        explicit map( const Compare& comp, const Allocator& alloc = Allocator()) :
-        _comparator(comp), _allocator(alloc) {}
-
-
-        Allocator get_allocator() { return _allocator; }
-        Allocator get_allocator() const { return _allocator; }
-
-        Compare value_comp() { return _comparator; }
-        Compare value_comp() const { return _comparator; }
-
-    private:
-
-        node_type *root;
-        Compare _comparator;
-        Allocator _allocator;
-
-        node_type * checkRoot(const Key & k, T value = T()) {
-            if (!root) {
-                root = new node_type(*this, ft::make_pair(k, value));
-                return root;
-            }
-            return 0;
-        }
-
-    };
 }
-
 
 #endif

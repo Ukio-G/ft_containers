@@ -2,18 +2,19 @@
 #define REVERSE_ITERATOR_HPP
 
 namespace ft {
-    template<class T>
+    template<class Iter>
     class reverse_iterator {
+        typedef reverse_iterator<Iter> r_iterator;
     public:
         reverse_iterator () : _iterator() {}
-        reverse_iterator (const T & iterator) : _iterator(iterator) { }
+        reverse_iterator (const Iter & iterator) : _iterator(iterator) { }
 
-        typedef typename T::value_type value_type;
+        typedef typename Iter::value_type value_type;
         typedef std::ptrdiff_t difference_type;
-        typedef typename T::pointer pointer;
-        typedef typename T::reference reference;
-        typedef typename T::iterator_category iterator_category;
-        typedef reverse_iterator<T> r_iterator;
+        typedef typename Iter::pointer pointer;
+        typedef typename Iter::reference reference;
+        typedef typename Iter::iterator_category iterator_category;
+        typedef Iter iterator_type;
         /* C++ named requirements: LegacyIterator */
 
 
@@ -26,7 +27,7 @@ namespace ft {
         }
 
         // is dereferenceable
-        typename T::value_type& operator*() {
+        typename Iter::value_type& operator*() {
             return *_iterator;
         }
 
@@ -91,8 +92,8 @@ namespace ft {
             return other._iterator - _iterator;
         }
 
-        typename T::value_type& operator[](int i) {
-            return _iterator[-i];
+        typename Iter::value_type& operator[](int i) {
+            return _iterator[-i - 1];
         }
 
         // The below rules imply that LegacyRandomAccessIterator also implements LessThanComparable.
@@ -112,8 +113,12 @@ namespace ft {
             return _iterator > other._iterator;
         }
 
+        Iter base() {
+            return _iterator;
+        }
+
     private:
-        T _iterator;
+        Iter _iterator;
     };
 }
 

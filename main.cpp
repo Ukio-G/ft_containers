@@ -6,6 +6,11 @@
 
 #include <vector>
 #include <algorithm>
+#include "ft_pair/pair.hpp"
+#include <map.h>
+#include <map>
+
+
 
 class A {
 public:
@@ -17,8 +22,56 @@ public:
         std::cout << "COPY" << std::endl;
     }
 
+
+
     A* i;
     int num;
+};
+
+class BVal {
+public:
+    BVal() : i(0) {
+        std::cout << __func__ << std::endl;
+    }
+
+    BVal(int i_) : i(i_) {
+        std::cout << __func__ << std::endl;
+    }
+
+    BVal(const BVal & other) : i(other.i) {
+        std::cout << "copy " << __func__ << std::endl;
+    }
+
+    ~BVal() {
+        std::cout << __func__ << " " << i << std::endl;
+    }
+
+    int i;
+};
+
+template <class T, class TT, class Allocator = std::allocator<ft::pair<T,TT> > >
+class B {
+public:
+    B(const ft::pair<T,TT> & p) : allocator() {
+        std::cout << "1" << std::endl;
+        set_value(p);
+        std::cout << "2" << std::endl;
+    }
+
+    void set_value(const ft::pair<T,TT> & p) {
+        std::cout << "3" << std::endl;
+        data.~pair();
+        allocator.construct(&data, p);
+        std::cout << "4" << std::endl;
+    }
+
+    ~B() {
+        std::cout << "5" << std::endl;
+    }
+
+private:
+    ft::pair<T, TT> data;
+    Allocator allocator;
 };
 
 template <typename T>
@@ -65,6 +118,23 @@ int main(int argc, char** argv) {
         std::cout << "Failed" << std::endl;
     } else {
         std::cout << "Ok" << std::endl;
+    }
+
+    std::map<int, int> asf;
+
+    ft::map<int, std::string> a;
+
+    a[0] = "121233";
+    a[1] = "123";
+    a[2] = "56";
+    a[3] = "sdfs";
+    a[4] = "g642f";
+    a[5] = "12aaffc";
+    a[5] = "12";
+
+
+    for (int i = 0; i < 6; ++i) {
+        std::cout << a[i] << std::endl;
     }
 
     return 0;

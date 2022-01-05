@@ -184,7 +184,7 @@ namespace ft {
 
         void assign(size_type count, const_reference value) {
             /* No need to reallocate memory - just wipe old data and
-             * place value's copy to vector data
+             * place _pair's copy to vector data
              */
             if (count <= _capacity) {
                 wipeData();
@@ -251,12 +251,12 @@ namespace ft {
             return result;
         }
 
-        ft::reverse_iterator<iterator> rbegin() const {
+        reverse_iterator<iterator> rbegin() const {
             reverse_iterator<iterator> result = end() - 1;
             return result;
         }
 
-        ft::reverse_iterator<iterator> rend() const {
+        reverse_iterator<iterator> rend() const {
             reverse_iterator<iterator> result = begin() - 1;
             return result;
         }
