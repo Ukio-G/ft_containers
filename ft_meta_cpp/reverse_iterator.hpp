@@ -15,6 +15,11 @@ namespace ft {
         typedef typename Iter::reference reference;
         typedef typename Iter::iterator_category iterator_category;
         typedef Iter iterator_type;
+
+
+        pointer operator->() {
+            return &operator*;
+        }
         /* C++ named requirements: LegacyIterator */
 
 
@@ -28,7 +33,8 @@ namespace ft {
 
         // is dereferenceable
         typename Iter::value_type& operator*() {
-            return *_iterator;
+            Iter it = _iterator;
+            return *--it;
         }
 
         //  is incrementable
@@ -96,23 +102,6 @@ namespace ft {
             return _iterator[-i - 1];
         }
 
-        // The below rules imply that LegacyRandomAccessIterator also implements LessThanComparable.
-        bool operator<(const r_iterator &other) {
-            return _iterator >= other._iterator;
-        }
-
-        bool operator>(const r_iterator &other) {
-            return _iterator <= other._iterator;
-        }
-
-        bool operator>=(const r_iterator &other) {
-            return _iterator < other._iterator;
-        }
-
-        bool operator<=(const r_iterator &other) {
-            return _iterator > other._iterator;
-        }
-
         Iter base() {
             return _iterator;
         }
@@ -120,6 +109,60 @@ namespace ft {
     private:
         Iter _iterator;
     };
+
+    template<class Iter1, class Iter2>
+    bool operator< (const reverse_iterator<Iter1> &lhs,
+                    const reverse_iterator<Iter2> &rhs) {
+        return lhs.base() < rhs.base();
+    }
+
+    template<class Iter1, class Iter2>
+    bool operator> (const reverse_iterator<Iter1> &lhs,
+                    const reverse_iterator<Iter2> &rhs) {
+        return lhs.base() > rhs.base();
+    }
+
+    template<class Iter1, class Iter2>
+    bool operator<= (const reverse_iterator<Iter1> &lhs,
+                    const reverse_iterator<Iter2> &rhs) {
+        return lhs.base() <= rhs.base();
+    }
+
+    template<class Iter1, class Iter2>
+    bool operator>= (const reverse_iterator<Iter1> &lhs,
+                    const reverse_iterator<Iter2> &rhs) {
+        return lhs.base() >= rhs.base();
+    }
+
+    template<class Iter1, class Iter2>
+    bool operator== (const reverse_iterator<Iter1> &lhs,
+                    const reverse_iterator<Iter2> &rhs) {
+        return lhs.base() == rhs.base();
+    }
+
+    template<class Iter1, class Iter2>
+    bool operator!= (const reverse_iterator<Iter1> &lhs,
+                    const reverse_iterator<Iter2> &rhs) {
+        return lhs.base() != rhs.base();
+    }
+
+    template< class Iter >
+    reverse_iterator<Iter>
+    operator+( typename reverse_iterator<Iter>::difference_type n,
+               const reverse_iterator<Iter>& it ) {
+        reverse_iterator<Iter> result = it;
+        result._iterator -= n;
+        return result;
+    }
+
+    template< class Iter >
+    reverse_iterator<Iter>
+    operator-( typename reverse_iterator<Iter>::difference_type n,
+               const reverse_iterator<Iter>& it ) {
+        reverse_iterator<Iter> result = it;
+        result._iterator += n;
+        return result;
+    }
 }
 
 
