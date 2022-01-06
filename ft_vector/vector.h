@@ -402,7 +402,7 @@ namespace ft {
                 _allocator.construct(placement_data + i, value);
             _size += count;
 
-            std::rotate(begin() + offset, end() - 1, end());
+            std::rotate(begin() + offset, end() - count, end());
         }
 
         template<class InputIt>
