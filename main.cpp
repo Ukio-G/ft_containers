@@ -97,45 +97,25 @@ typedef ft::vector<int>::iterator It;
 typedef std::vector<int>::iterator SIt;
 
 int main(int argc, char** argv) {
-    std::vector<int> sveci;
-
-    for (int i = 0; i < 10; ++i)
-        sveci.push_back(i);
-    ft::vector<int> vec(sveci.begin(), sveci.end());
 
 
-    print_vector_status(vec);
+    std::map<int, std::string> map;
 
-    It vi = vec.erase(vec.begin(), vec.begin());
-    SIt svi = sveci.erase(sveci.begin(), sveci.begin());
-    if (!vec_eq(vec, sveci)) {
-        std::cout << "Failed" << std::endl;
-    } else {
-        std::cout << "Ok" << std::endl;
-    }
+    map[3] = "3";
+    map[453] = "453";
+    map[122] = "122";
+    map[0] = "0";
+    map[67] = "67";
+    map[8] = "8";
+    map[1] = "1";
+    map[15] = "15";
+    map[75] = "75";
 
-    if (std::distance(vec.begin(), vi) != std::distance(sveci.begin(), svi)) {
-        std::cout << "Failed" << std::endl;
-    } else {
-        std::cout << "Ok" << std::endl;
-    }
-
-    std::map<int, int> asf;
 
     ft::map<int, std::string> a;
-
-    a[0] = "121233";
-    a[1] = "123";
-    a[2] = "56";
-    a[3] = "sdfs";
-    a[4] = "g642f";
-    a[5] = "12aaffc";
-    a[5] = "12";
-
-
-    for (int i = 0; i < 6; ++i) {
-        std::cout << a[i] << std::endl;
-    }
+    a[1] = "234";
+    a[0] = "454tr";
+    a[2] = "fdsg";
 
     return 0;
 }
