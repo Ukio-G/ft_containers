@@ -27,9 +27,10 @@ namespace ft {
 
         typedef typename Owner::key_compare Comp;
         typedef typename Owner::allocator_type Allocator;
+        typedef typename Owner::allocator_type::template rebind<Tree<K,V,Owner> >::other NodeAllocator;
 
         Tree(const Tree & other) :
-                _parent(other.parent), _left(other._left), _right(other._right), _height(other._height), _owner(other._owner)
+                _parent(other._parent), _left(other._left), _right(other._right), _height(other._height), _owner(other._owner), _pair(other._pair)
         {}
 
         Tree(Tree *parent, pair<K, V> value) : _parent(parent), _left(0), _right(0), _pair(value), _height(1), _owner(parent->_owner) {}
@@ -48,23 +49,21 @@ namespace ft {
             return tmp_parent;
         }
 
-        Tree<K, V, Owner>* insert(const pair<K, V> & p) {
+        Tree<K, V, Owner>* insert(const pair<K, V> & p, NodeAllocator & allocator) {
             Comp c = _owner.key_comp();
             Tree *&appendNode = (c(this->_pair.first, p.first)) ? _right : _left;
 
             if (appendNode == 0) {
-                Allocator allocator = _owner.get_allocator();
-
-                appendNode = new Tree<K, V, Owner>(this, p);
-                appendNode->_pair.~pair();
-                allocator.construct(&(appendNode->_pair), p);
+                Tree new_node(this, p);
+                appendNode = allocator.allocate(1);
+                allocator.construct(appendNode, new_node);
 
                 appendNode->recursiveHeightUpdate();
                 appendNode->recursiveBalance();
 
                 return appendNode;
             } else
-                return appendNode->insert(p);
+                return appendNode->insert(p, allocator);
         }
 
         Tree *find(K key) {
@@ -79,7 +78,7 @@ namespace ft {
             return 0;
         }
 
-        Tree *remove(K key) {
+        Tree *remove(K key, NodeAllocator & allocator) {
             Tree *delete_node = find(key);
             if (!delete_node)
                 return findRoot();
@@ -93,7 +92,8 @@ namespace ft {
                     delete_parent->recursiveHeightUpdate();
                     delete_parent->recursiveBalance();
                 }
-                delete delete_node; /* Possible 'delete this' ? */
+                allocator.destroy(delete_node);
+                allocator.deallocate(delete_node, 1);
                 return delete_parent;
             }
 
@@ -106,7 +106,8 @@ namespace ft {
                     delete_parent->recursiveBalance();
                 }
                 Tree *result = delete_node->_right;
-                delete delete_node;
+                allocator.destroy(delete_node);
+                allocator.deallocate(delete_node, 1);
                 return result;
             }
 
@@ -125,7 +126,8 @@ namespace ft {
             if (delete_node->_left) delete_node->_left->_parent = new_node;
             if (delete_node->_right) delete_node->_right->_parent = new_node;
 
-            delete delete_node;
+            allocator.destroy(delete_node);
+            allocator.deallocate(delete_node, 1);
 
             if (delete_parent) {
                 Tree *balance_node = (new_node_parent == delete_node) ? new_node : new_node_parent;
@@ -412,7 +414,7 @@ namespace ft {
             insert(first, last);
         }
 
-        map( const map& other ) : root(0), _size(0) {
+        map( const map& other ) : root(0), _size(0), _allocator(other._allocator), _nodeAllocator(other._nodeAllocator) {
             insert(other.begin(), other.end());
         }
 
@@ -446,7 +448,7 @@ namespace ft {
                 return node->getData().second;
 
             ft::pair<Key, T> p = ft::make_pair(k, T());
-            node = root->insert(p);
+            node = root->insert(p, _nodeAllocator);
             _size++;
             root = root->findRoot();
             return node->getData().second;
@@ -633,7 +635,7 @@ namespace ft {
             node = hint._current->insert(value);
             _size++;
             root = root->findRoot();
-            return node->getData().second;
+            return iterator(node, node->prev());
         }
 
         template< class InputIt >
@@ -649,7 +651,7 @@ namespace ft {
         void erase( iterator pos ) {
             if (!root)
                 return;
-            node_type * remove_result = root->remove(pos->first);
+            node_type * remove_result = root->remove(pos->first, _nodeAllocator);
             root = (remove_result) ? remove_result->findRoot() : 0;
             _size--;
         }
@@ -665,7 +667,7 @@ namespace ft {
                 start++;
             }
             for (int i = 0; i < elements; ++i) {
-                node_type * remove_result = root->remove(keys[i]);
+                node_type * remove_result = root->remove(keys[i], _nodeAllocator);
                 root = (remove_result) ? remove_result->findRoot() : 0;
             }
             delete [] keys;
@@ -676,6 +678,7 @@ namespace ft {
             std::swap(root, other.root);
             std::swap(_comparator, other._comparator);
             std::swap(_allocator, other._allocator);
+            std::swap(_nodeAllocator, other._nodeAllocator);
             std::swap(_size, other._size);
         }
 
@@ -772,9 +775,12 @@ namespace ft {
         value_compare value_comp() const { return value_compare(); }
 
     private:
+        typedef typename allocator_type::template rebind<node_type>::other NodeAllocator;
+
         node_type *root;
         Compare _comparator;
         Allocator _allocator;
+        NodeAllocator _nodeAllocator;
         size_type _size;
 
         node_type * checkRoot(const Key & k, T value = T()) {
@@ -788,5 +794,24 @@ namespace ft {
     };
 }
 
+namespace std {
+    template< class Key,
+            class T,
+            class Compare,
+            class Allocator>
+    void swap( ft::map<Key, T, Compare, Allocator>& lhs,
+               ft::map<Key, T, Compare, Allocator>& rhs ) {
+        lhs.swap(rhs);
+    }
+
+    template< class Key,
+            class T,
+            class Compare,
+            class Allocator>
+    void swap( typename ft::map<Key, T, Compare, Allocator>::iterator& lhs,
+               typename ft::map<Key, T, Compare, Allocator>::iterator& rhs ) {
+        lhs->swap(*rhs);
+    }
+}
 
 #endif

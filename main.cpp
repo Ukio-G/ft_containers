@@ -22,11 +22,15 @@ public:
         std::cout << "COPY" << std::endl;
     }
 
-
-
     A* i;
     int num;
 };
+
+
+std::ostream & operator<<(std::ostream & a, A& b) {
+    a << b.i << " " << b.num;
+    return a;
+}
 
 class BVal {
 public:
@@ -107,23 +111,20 @@ typedef ft::map<int, std::string>::reverse_iterator RMIt;
 typedef ft::map<int, std::string>::iterator MIt;
 typedef std::vector<int>::iterator SIt;
 
+
 int main(int argc, char** argv) {
+    ft::map<int, std::string> sdasamap;
 
-    ft::map<int, std::string> a;
+    sdasamap[0] = "sada";
+    sdasamap[1] = "fsdg";
+    sdasamap[2] = "dg";
+    sdasamap[3] = "sfg";
+    sdasamap[4] = "1234";
+    sdasamap[1] = "1sfgf";
+    sdasamap[1] = "1adsfgsfg234";
 
-    a[0] = "234sdfs";
-    a[1] = "234";
-    a[2] = "454tr";
-    a[3] = "fdsg";
-    a[4] = "fds";
-    a[5] = "123";
-    a[6] = "fhb";
-    a[60] = "fgdsg";
-    a[69] = "bvcg";
-    a[61] = "fkf";
-    a[35243] = "asfv";
 
-    print_map_status(a);
+    print_map_status(sdasamap);
 
     return 0;
 }
