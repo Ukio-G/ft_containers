@@ -153,17 +153,34 @@ namespace ft {
 
         typedef ft::reverse_iterator<iterator> reverse_iterator;
         typedef const ft::reverse_iterator<iterator> const_reverse_iterator;
+        typedef const iterator const_iterator;
 
+        /* 1 */
         vector() : _size(0), _capacity(0), _allocator(), _data(0) { };
 
+        /* 2 */
         explicit vector( const Allocator& alloc ) : _size(0), _capacity(0), _allocator(alloc), _data(0)  { }
 
+        /* 3 */
+        explicit vector( size_type count,
+                         const T& value = T(),
+                         const Allocator& alloc = Allocator()) : _size(0), _capacity(0), _allocator(alloc), _data(0) {
+            fill_construct(count, value);
+        }
+
+        /* 4 */
+        explicit vector( size_type count ) : _size(0), _capacity(0), _data(0)  {
+
+        }
+
+        /* 5 */
         template< class InputIt >
         vector( InputIt first, InputIt last, const Allocator& alloc = Allocator() ) : _size(0), _capacity(0), _allocator(alloc), _data(0) {
             typedef typename is_integer<InputIt>::type Integer;
             constructor_dispatch(first, last, Integer());
         }
 
+        /* 6 */
         vector( const vector& other ) : _size(other._size), _capacity(other._capacity), _allocator(other._allocator), _data(0) {
             allocate(other._capacity);
             for (int i = 0; i < other._size; ++i)
@@ -185,6 +202,15 @@ namespace ft {
                 _allocator.construct(_data + i, other[i]);
         }
 
+        /* 1 */
+        template< class InputIt >
+        void assign( InputIt first, InputIt last ) {
+            typedef typename is_integer<InputIt>::type Integer;
+            wipeData();
+            assign_dispatch(first, last, Integer());
+        }
+
+        /* 2 */
         void assign(size_type count, const_reference value) {
             /* No need to reallocate memory - just wipe old data and
              * place _pair's copy to vector data
@@ -204,7 +230,7 @@ namespace ft {
             _size = count;
         }
 
-        allocator_type get_allocator() {
+        allocator_type get_allocator() const {
             return _allocator;
         };
 
@@ -213,14 +239,10 @@ namespace ft {
          */
 
         reference at(size_type pos) {
-            if (pos >= _size) {
-                std::string error_msg = generateOutOfRangeStr(pos, _size);
-                throw std::out_of_range(error_msg);
-            }
-            return _data[pos];
+            return const_cast<reference>(static_cast<const vector<T, Allocator>&>(*this).at(pos));
         }
 
-        const reference at(size_type pos) const {
+        const_reference at(size_type pos) const {
             if (pos >= _size) {
                 std::string error_msg = generateOutOfRangeStr(pos, _size);
                 throw std::out_of_range(error_msg);
@@ -244,24 +266,36 @@ namespace ft {
          * Iterators
          */
 
-        iterator begin() const {
-            iterator result(_data);
-            return result;
+        iterator begin() {
+            return iterator(_data);
         }
 
-        iterator end() const {
-            iterator result(_data + _size);
-            return result;
+        const_iterator begin() const {
+            return iterator(_data);
         }
 
-        reverse_iterator rbegin() const {
-            reverse_iterator result = reverse_iterator(end());
-            return result;
+        iterator end() {
+            return iterator(_data + _size);
         }
 
-        reverse_iterator rend() const {
-            reverse_iterator result = reverse_iterator(begin());
-            return result;
+        const_iterator end() const {
+            return iterator(_data + _size);
+        }
+
+        reverse_iterator rbegin() {
+            return reverse_iterator(end());
+        }
+
+        const_reverse_iterator rbegin() const{
+            return reverse_iterator(end());
+        }
+
+        reverse_iterator rend() {
+            return reverse_iterator(begin());
+        }
+
+        const_reverse_iterator rend() const {
+            return reverse_iterator(begin());
         }
 
         /*
@@ -293,6 +327,7 @@ namespace ft {
             wipeData();
         }
 
+        /* 1 */
         iterator insert(iterator pos, const_reference value) {
             size_type offset = pos - begin();
             push_back(value);
@@ -300,11 +335,18 @@ namespace ft {
             return begin() + offset;
         }
 
+        /* 3 */
+        void insert( iterator pos, size_type count, const T& value ) {
+            fill_insert(pos, count, value);
+        }
+
+        /* 4 */
         template< class InputIt > void insert(iterator pos, InputIt first, InputIt last) {
             typedef typename is_integer<InputIt>::type Integral;
             insert_dispatch(pos, first, last, Integral());
         }
 
+        /* 1 */
         iterator erase(iterator pos) {
             size_type offset = pos - begin();
             std::rotate(pos, pos + 1, end());
@@ -313,6 +355,7 @@ namespace ft {
             return begin() + offset;
         }
 
+        /* 2 */
         iterator erase(iterator first, iterator last) {
             iterator result = 0;
             if (first == last)
@@ -369,6 +412,7 @@ namespace ft {
             std::swap(_size, other._size);
             std::swap(_allocator, other._allocator);
         }
+
     private:
         size_t _size;
         size_t _capacity;
@@ -380,6 +424,12 @@ namespace ft {
 
         template<typename InputIt> void constructor_dispatch(InputIt start, InputIt end, false_type)
         { range_construct(start, end); }
+
+        template<typename Integer> void assign_dispatch(Integer n, Integer val, true_type)
+        { fill_insert(begin(), n, val); }
+
+        template<typename InputIt> void assign_dispatch(InputIt first, InputIt last, false_type)
+        { range_insert(begin(), first, last); }
 
         void fill_construct(size_type count, const_reference value) {
             fill_insert(begin(), count, value);
@@ -422,7 +472,6 @@ namespace ft {
 
             std::rotate(begin() + offset, end() - elements_count, end());
         }
-
 
         std::string generateOutOfRangeStr(size_type pos, size_type size) {
             std::string _size_str;
@@ -549,17 +598,18 @@ namespace ft {
         }
     };
 
+    template <typename T> typename vector<T>::iterator operator+(typename vector<T>::iterator::difference_type n, typename vector<T>::iterator &it) {
+        return it - n;
+    }
+
     /*
      * Vector non member functions and operators
      */
 
-    template<typename T>
-    void swap(vector<T>& a,vector<T>& b) {
-        a.swap(b);
-    }
-
-    template <typename T> typename vector<T>::iterator operator+(typename vector<T>::iterator::difference_type n, typename vector<T>::iterator &it) {
-        return it - n;
+    template< class T, class Alloc >
+    void swap( vector<T,Alloc>& lhs,
+               vector<T,Alloc>& rhs ) {
+        lhs.swap(rhs);
     }
 
     template< class T, class Alloc >
@@ -605,9 +655,16 @@ namespace ft {
 }
 
 namespace std {
-    template<typename T, class Alloc>
-    void swap(ft::vector<T, Alloc> & a,ft::vector<T, Alloc> & b) {
-        a.swap(b);
+    template< class T, class Alloc >
+    void swap( ft::vector<T,Alloc>& lhs,
+               ft::vector<T,Alloc>& rhs ) {
+        lhs.swap(rhs);
+    }
+
+    template< class T, class Alloc >
+    void swap( typename ft::vector<T,Alloc>::iterator& lhs,
+               typename ft::vector<T,Alloc>::iterator& rhs ) {
+        lhs->swap(*rhs);
     }
 }
 
