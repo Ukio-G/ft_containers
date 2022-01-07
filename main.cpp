@@ -98,24 +98,26 @@ typedef std::vector<int>::iterator SIt;
 
 int main(int argc, char** argv) {
 
-
-    std::map<int, std::string> map;
-
-    map[3] = "3";
-    map[453] = "453";
-    map[122] = "122";
-    map[0] = "0";
-    map[67] = "67";
-    map[8] = "8";
-    map[1] = "1";
-    map[15] = "15";
-    map[75] = "75";
-
-
     ft::map<int, std::string> a;
+
+    a[0] = "234sdfs";
     a[1] = "234";
-    a[0] = "454tr";
-    a[2] = "fdsg";
+    a[2] = "454tr";
+    a[3] = "fdsg";
+    a[4] = "fds";
+    a[5] = "123";
+    a[6] = "fhb";
+    a[60] = "fgdsg";
+    a[69] = "bvcg";
+    a[61] = "fkf";
+    a[35243] = "asfv";
+
+    ft::map<int, std::string> b(a);
+
+    for(ft::map<int, std::string>::iterator it = b.begin(); it != b.end(); it++) {
+        std::cout << it->first << " " << it->second << std::endl;
+    }
+    std::cout << "size " << b.size() << std::endl;
 
     return 0;
 }

@@ -11,6 +11,7 @@
 #include <limits>
 #include <algorithm>
 #include <iostream>
+#include <reverse_iterator.hpp>
 // #include "avl_tree.hpp"
 
 namespace ft {
@@ -48,7 +49,7 @@ namespace ft {
         }
 
         Tree<K, V, Owner>* insert(const pair<K, V> & p) {
-            Comp c = _owner.value_comp();
+            Comp c = _owner.key_comp();
             Tree *&appendNode = (c(this->_pair.first, p.first)) ? _right : _left;
 
             if (appendNode == 0) {
@@ -141,6 +142,65 @@ namespace ft {
             return _pair;
         }
 
+        const pair<K, V> &getData() const {
+            return _pair;
+        }
+
+        Tree<K,V,Owner>* findMinimum() {
+            return (_left) ? _left->findMinimum() : this;
+        }
+
+        Tree<K,V,Owner> *findMaximum() {
+            return (_right) ? _right->findMaximum() : this;
+        }
+
+        Tree * next() {
+            Tree * node = this;
+            if (_right != 0)
+                return _right->findMinimum();
+
+            Tree * parent_ = _parent;
+            if (parent_ == 0)
+                return 0;
+
+            if (node == parent_->_left)
+                return parent_;
+
+            while (parent_ != 0 && node != parent_->_left)
+            {
+                node = parent_;
+                parent_ = node->_parent;
+            }
+
+            return parent_;
+        };
+
+        Tree * prev() {
+            Tree * node = this;
+            if (_left != 0)
+                return _left->findMaximum();
+
+            Tree * parent = _parent;
+            if (parent == 0)
+                return 0;
+
+            if (node == parent->_right)
+                return parent;
+
+            while (parent != 0 && node != parent->_right)
+            {
+                node = parent;
+                parent = node->_parent;
+            }
+
+            return parent;
+        };
+
+        const Tree* getLeft() const { return _left; }
+        const Tree* getRight() const { return _right; }
+        Tree* getLeft() { return _left; }
+        Tree* getRight() { return _right; }
+
     private:
         Tree * _left;
         Tree * _parent;
@@ -167,10 +227,6 @@ namespace ft {
                 return true;
             }
             return false;
-        }
-
-        Tree *findMaximum() {
-            return (_right) ? _right->findMaximum() : this;
         }
 
         void setParentToThisNull() {
@@ -325,7 +381,7 @@ namespace ft {
     public:
         typedef Key key_type;
         typedef T mapped_type;
-        typedef pair<const Key, T> value_type;
+        typedef pair<Key, T> value_type;
         typedef std::size_t size_type;
         typedef std::ptrdiff_t difference_type;
         typedef Compare key_compare;
@@ -336,47 +392,376 @@ namespace ft {
         typedef typename Allocator::const_pointer const_pointer;
         typedef Tree<Key, T, ft::map<Key, T, Compare, Allocator> > node_type;
 
-        T& operator[](Key k) {
+        class value_compare {
+        protected:
+            value_compare(Compare & c) : comp(c) {}
+            Compare comp;
+        public:
+            bool operator()( const value_type& lhs, const value_type& rhs ) const {
+                return comp(lhs.first, rhs.first);
+            }
+        };
+
+        map() : root(0), _size(0) {}
+
+        explicit map( const Compare& comp, const Allocator& alloc = Allocator()) :
+                _comparator(comp), _allocator(alloc), _size(0) {}
+
+        template< class InputIt >
+        map( InputIt first, InputIt last,
+             const Compare& comp = Compare(),
+             const Allocator& alloc = Allocator() ) : root(0), _size(0) {
+            insert(first, last);
+        }
+
+        map( const map& other ) : root(0), _size(0) {
+            insert(other.begin(), other.end());
+        }
+
+        ~map() {
+            clear();
+        }
+
+        T& at( const Key& key ) {
+            return const_cast<T&>(static_cast<const map &>(*this).at(key));
+        }
+
+        const T& at( const Key& key ) const {
+            iterator it = find(key);
+            if (it == end())
+                throw std::out_of_range("Map doesn't contain value");
+            return it->second;
+        }
+
+        Allocator get_allocator() { return _allocator; }
+
+        Allocator get_allocator() const { return _allocator; }
+
+        T& operator[](const Key & k) {
             if (!root)
                 return checkRoot(k)->getData().second;
+
             node_type * node;
             node = root->find(k);
-            if (node) {
+
+            if (node)
                 return node->getData().second;
-            }
+
             ft::pair<Key, T> p = ft::make_pair(k, T());
             node = root->insert(p);
+            _size++;
             root = root->findRoot();
             return node->getData().second;
         }
 
+        class iterator {
+        public:
+            typedef T value_type;
+            typedef std::ptrdiff_t difference_type;
+            typedef T* pointer;
+            typedef T& reference;
+            typedef std::bidirectional_iterator_tag iterator_category;
 
-        map() : root(0) {}
+            /* C++ named requirements: LegacyIterator */
 
-        explicit map( const Compare& comp, const Allocator& alloc = Allocator()) :
-        _comparator(comp), _allocator(alloc) {}
+            //  * C++ named requirements: CopyConstructible
+            iterator(const iterator & other) : _current(other._current), _prev(other._prev) { }
+            iterator(node_type* node) : _current(node), _prev(0)  { }
+            iterator(node_type* node, node_type* prev) : _current(node), _prev(prev)  { }
+
+            //  * C++ named requirements: CopyAssignable
+            iterator& operator=(const iterator& other) {
+                if (&other == this)
+                    return *this;
+                _current = other._current;
+                _prev = other._prev;
+                return *this;
+            }
+
+            // is dereferenceable
+            ft::pair<Key, T>& operator*() {
+                return _current->getData();
+            }
+
+            ft::pair<Key, T> * operator->() {
+                return &(operator*());
+            }
+
+            //  is incrementable
+            iterator& operator++() {
+                _prev = _current;
+                _current = _current->next();
+                return *this;
+            }
+
+            iterator operator++(int) {
+                iterator result = *this;
+                _prev = _current;
+                _current = _current->next();
+                return result;
+            }
+
+            /* C++ named requirements: LegacyInputIterator */
+
+            // C++ named requirements: EqualityComparable
+            bool operator==(const iterator & other) {
+                return _current == other._current && _prev == other._prev;
+            }
+
+            bool operator!=(const iterator & other) {
+                return !((*this) == other);
+            }
+
+            /* LegacyForwardIterator */
+
+            // C++ named requirements: DefaultConstructible
+            iterator() : _current(0), _prev(0) {}
+
+            /* C++ named requirements: LegacyBidirectionalIterator */
+            iterator& operator--() {
+                _current = _prev;
+                if (_prev)
+                    _prev = _prev->prev();
+                return *this;
+            }
+
+            iterator operator--(int) {
+                iterator result = *this;
+                _current = _prev;
+                if (_prev)
+                    _prev = _prev->prev();
+                return result;
+            }
+
+            //  * C++ named requirements: Destructible
+            ~iterator() { }
 
 
-        Allocator get_allocator() { return _allocator; }
-        Allocator get_allocator() const { return _allocator; }
+        private:
+            node_type* _current;
+            node_type* _prev;
+        };
 
-        Compare value_comp() { return _comparator; }
-        Compare value_comp() const { return _comparator; }
+        typedef reverse_iterator<iterator> reverse_iterator;
+        typedef const reverse_iterator const_reverse_iterator;
+        typedef const iterator const_iterator;
+
+        iterator begin() {
+            return static_cast<const map &>(*this).begin();
+        }
+
+        iterator end() {
+            return static_cast<const map &>(*this).end();
+        }
+
+        const_iterator begin() const {
+            if (!root) return iterator();
+            return iterator(root->findMinimum());
+        }
+
+        const_iterator end() const {
+            if (!root) return iterator();
+            return iterator(0, root->findMaximum());
+        }
+
+        //TODO: implement reverse iterators
+        reverse_iterator rbegin() {
+            return static_cast<const map &>(*this).rbegin();
+        }
+
+        const_reverse_iterator rbegin() const {
+            //TODO: Implement this
+        }
+
+        reverse_iterator rend() {
+            return static_cast<const map &>(*this).rend();
+        }
+
+        const_reverse_iterator rend() const {
+            //TODO: Implement this
+        }
+
+        bool empty() const {
+            return (_size == 0);
+        }
+
+        size_type size() const {
+            return _size;
+        }
+
+        size_type max_size() const {
+            //TODO: Implement this
+            std::numeric_limits<difference_type>::max();
+        }
+        
+        void clear() {
+            if (!root)
+                return;
+            erase(begin(), end());
+            _size = 0;
+        }
+
+        pair<iterator, bool> insert( const value_type& value ) {
+            size_type prev_size = _size;
+            (*this)[value.first] = value.second;
+            node_type * insert_pos = root->find(value.first);
+            iterator result(insert_pos, insert_pos->prev());
+            return make_pair(result, prev_size == _size);
+        }
+
+        iterator insert( iterator hint, const value_type& value ) {
+            //TODO: Implement this.
+        }
+
+        template< class InputIt >
+        void insert( InputIt first_, InputIt last_ ) {
+            if (checkRoot(first_->first, first_->second) != 0)
+                first_++;
+            while (first_ != last_) {
+                (*this)[first_->first] = first_->second;
+                first_++;
+            }
+        }
+
+        void erase( iterator pos ) {
+            if (!root)
+                return;
+            node_type * remove_result = root->remove(pos->first);
+            root = (remove_result) ? remove_result->findRoot() : 0;
+            _size--;
+        }
+
+        void erase( iterator start, iterator end) {
+            if (!root)
+                return;
+            size_t elements = std::distance(start, end);
+            Key *keys = new Key[elements];
+            size_t counter = 0;
+            while (start != end) {
+                keys[counter++] = start->first;
+                start++;
+            }
+            for (int i = 0; i < elements; ++i) {
+                node_type * remove_result = root->remove(keys[i]);
+                root = (remove_result) ? remove_result->findRoot() : 0;
+            }
+            delete [] keys;
+            _size -= elements;
+        }
+
+        void swap(map<Key, T, Compare, Allocator> & other) {
+            std::swap(root, other.root);
+            std::swap(_comparator, other._comparator);
+            std::swap(_allocator, other._allocator);
+            std::swap(_size, other._size);
+        }
+
+        size_type count( const Key& key ) const {
+            if (!root)
+                return 0;
+            return root->find(key) != 0;
+        }
+
+        iterator find( const Key& key ) {
+            if (!root)
+                return iterator();
+            node_type * item = root->find(key);
+            if (item)
+                return iterator(item, item->prev());
+            return end();
+        }
+
+        const_iterator find( const Key& key ) const {
+            if (!root)
+                return iterator();
+            node_type * item = root->find(key);
+            if (item)
+                return iterator(item, item->prev());
+            return end();
+        }
+
+        pair<iterator,iterator> equal_range( const Key& key ) {
+            pair<iterator,iterator> result = make_pair(lower_bound(key), upper_bound(key));
+        }
+
+        pair<const_iterator, const_iterator> equal_range( const Key& key ) const {
+            pair<iterator,iterator> result = make_pair(lower_bound(key), upper_bound(key));
+        }
+
+        iterator lower_bound( const Key& key ) {
+            return static_cast<const map &>(*this).lower_bound(key);
+        }
+
+        const_iterator lower_bound( const Key& key ) const {
+            if (!root || root->findMaximum()->getData().first < key)
+                return end();
+            if (key < root->findMinimum()->getData().first)
+                return begin();
+
+            iterator it(root, root->prev());
+            while (it != 0) {
+                if (key == it->first)
+                    return it;
+                if (it->first > key) {
+                    it--;
+                    if (it->first < key)
+                        return ++it;
+                } else {
+                    it++;
+                    if (it->first >= key)
+                        return it;
+                }
+            }
+            return it;
+        }
+
+        iterator upper_bound( const Key& key ) {
+            return static_cast<const map &>(*this).upper_bound(key);
+        }
+
+        const_iterator upper_bound( const Key& key ) const {
+            if (!root || root->findMaximum()->getData().first <= key)
+                return end();
+            if (key < root->findMinimum()->getData().first)
+                return begin();
+
+            iterator it(root, root->prev());
+            if (key == it->first)
+                return ++it;
+            while (it != 0) {
+                if (it->first > key) {
+                    it--;
+                    if (it->first <= key)
+                        return ++it;
+                } else {
+                    it++;
+                    if (it->first > key)
+                        return it;
+                }
+            }
+            return it;
+        }
+
+        key_compare key_comp() const {
+            return _comparator;
+        }
+
+        value_compare value_comp() const { return value_compare(); }
 
     private:
-
         node_type *root;
         Compare _comparator;
         Allocator _allocator;
+        size_type _size;
 
         node_type * checkRoot(const Key & k, T value = T()) {
             if (!root) {
                 root = new node_type(*this, ft::make_pair(k, value));
+                _size++;
                 return root;
             }
             return 0;
         }
-
     };
 }
 
