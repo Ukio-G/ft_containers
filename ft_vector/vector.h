@@ -151,6 +151,9 @@ namespace ft {
             T* m_data_pointer;
         };
 
+        typedef ft::reverse_iterator<iterator> reverse_iterator;
+        typedef const ft::reverse_iterator<iterator> const_reverse_iterator;
+
         vector() : _size(0), _capacity(0), _allocator(), _data(0) { };
 
         explicit vector( const Allocator& alloc ) : _size(0), _capacity(0), _allocator(alloc), _data(0)  { }
@@ -251,13 +254,13 @@ namespace ft {
             return result;
         }
 
-        reverse_iterator<iterator> rbegin() const {
-            reverse_iterator<iterator> result = end() - 1;
+        reverse_iterator rbegin() const {
+            reverse_iterator result = reverse_iterator(end());
             return result;
         }
 
-        reverse_iterator<iterator> rend() const {
-            reverse_iterator<iterator> result = begin() - 1;
+        reverse_iterator rend() const {
+            reverse_iterator result = reverse_iterator(begin());
             return result;
         }
 

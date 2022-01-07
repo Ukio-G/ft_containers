@@ -7,7 +7,7 @@ namespace ft {
         typedef reverse_iterator<Iter> r_iterator;
     public:
         reverse_iterator () : _iterator() {}
-        reverse_iterator (const Iter & iterator) : _iterator(iterator) { }
+        explicit reverse_iterator (const Iter & iterator) : _iterator(iterator) { }
 
         typedef typename Iter::value_type value_type;
         typedef std::ptrdiff_t difference_type;
@@ -18,7 +18,7 @@ namespace ft {
 
 
         pointer operator->() {
-            return &operator*;
+            return &(operator*());
         }
         /* C++ named requirements: LegacyIterator */
 
@@ -34,7 +34,7 @@ namespace ft {
         // is dereferenceable
         typename Iter::value_type& operator*() {
             Iter it = _iterator;
-            return *--it;
+            return *(--it);
         }
 
         //  is incrementable

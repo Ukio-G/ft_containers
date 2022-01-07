@@ -456,10 +456,10 @@ namespace ft {
 
         class iterator {
         public:
-            typedef T value_type;
+            typedef map::value_type value_type;
             typedef std::ptrdiff_t difference_type;
-            typedef T* pointer;
-            typedef T& reference;
+            typedef value_type* pointer;
+            typedef value_type& reference;
             typedef std::bidirectional_iterator_tag iterator_category;
 
             /* C++ named requirements: LegacyIterator */
@@ -479,11 +479,11 @@ namespace ft {
             }
 
             // is dereferenceable
-            ft::pair<Key, T>& operator*() {
+            reference operator*() {
                 return _current->getData();
             }
 
-            ft::pair<Key, T> * operator->() {
+            pointer operator->() {
                 return &(operator*());
             }
 
@@ -570,7 +570,8 @@ namespace ft {
         }
 
         const_reverse_iterator rbegin() const {
-            //TODO: Implement this
+            if (!root) return const_reverse_iterator();
+            return const_reverse_iterator(end());
         }
 
         reverse_iterator rend() {
@@ -578,7 +579,8 @@ namespace ft {
         }
 
         const_reverse_iterator rend() const {
-            //TODO: Implement this
+            if (!root) return const_reverse_iterator();
+            return const_reverse_iterator(begin());
         }
 
         bool empty() const {

@@ -112,9 +112,30 @@ int main(int argc, char** argv) {
     a[61] = "fkf";
     a[35243] = "asfv";
 
-    ft::map<int, std::string> b(a);
 
-    for(ft::map<int, std::string>::iterator it = b.begin(); it != b.end(); it++) {
+
+    ft::vector<int> veci;
+
+
+    for (int i = 0; i < 10; ++i) {
+        veci.push_back(i);
+    }
+
+    ft::vector<int>::reverse_iterator rbeg = veci.rbegin();
+    ft::vector<int>::reverse_iterator rend = veci.rend();
+
+    for(ft::vector<int>::reverse_iterator it = rbeg; it != rend; it++) {
+        std::cout << *it << std::endl;
+    }
+
+
+    ft::map<int, std::string> b(a);
+    ft::map<int, std::string>::reverse_iterator end = b.rend();
+    ft::map<int, std::string>::reverse_iterator beg = b.rbegin();
+    end--;
+    end--;
+    beg++;
+    for(ft::map<int, std::string>::reverse_iterator it = beg; it != end; it++) {
         std::cout << it->first << " " << it->second << std::endl;
     }
     std::cout << "size " << b.size() << std::endl;
