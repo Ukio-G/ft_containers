@@ -71,13 +71,11 @@ namespace ft {
             if (_pair.first == key)
                 return this;
 
-            // TODO: rewrite it. Must use binary search instead of this
-            if (_left && _left->find(key))
+            if (_pair.first > key && _left)
                 return _left->find(key);
 
-            if (_right && _right->find(key))
+            if (_right)
                 return _right->find(key);
-
             return 0;
         }
 
@@ -564,7 +562,6 @@ namespace ft {
             return iterator(0, root->findMaximum());
         }
 
-        //TODO: implement reverse iterators
         reverse_iterator rbegin() {
             return static_cast<const map &>(*this).rbegin();
         }
@@ -592,7 +589,6 @@ namespace ft {
         }
 
         size_type max_size() const {
-            //TODO: Implement this
             std::numeric_limits<difference_type>::max();
         }
         
@@ -611,8 +607,33 @@ namespace ft {
             return make_pair(result, prev_size == _size);
         }
 
+
+        /* From ISO/IEC 14882:
+         *
+         *   inserts t if and only if there is no
+         *   element with key equivalent to the
+         *   key of t in containers with unique
+         *   keys; always inserts t in containers with equivalent keys. always
+         *   returns the iterator pointing to the
+         *   element with key equivalent to the
+         *   key of t. iterator p is a hint pointing to where the insert should start
+         *   to search.
+         *
+         * */
         iterator insert( iterator hint, const value_type& value ) {
-            //TODO: Implement this.
+            if (!root)
+                return checkRoot(value.first)->getData().second;
+
+            node_type * node;
+            node = root->find(value.first);
+
+            if (node)
+                return node->getData().second;
+
+            node = hint._current->insert(value);
+            _size++;
+            root = root->findRoot();
+            return node->getData().second;
         }
 
         template< class InputIt >

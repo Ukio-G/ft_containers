@@ -83,6 +83,14 @@ void print_vector_status(T & vec) {
     }
 }
 
+template <typename T>
+void print_map_status(T & map) {
+    std::cout << "size: " << map.size() << std::endl;
+    for (typename T::iterator it = map.begin(); it != map.end() ; it++) {
+        std::cout << "[" << it->first << "] " << it->second << std::endl;
+    }
+}
+
 template<class T, class TT>
 bool vec_eq(T & v1, TT & v2) {
     if (v1.size() != v2.size())
@@ -94,6 +102,9 @@ bool vec_eq(T & v1, TT & v2) {
 }
 
 typedef ft::vector<int>::iterator It;
+typedef ft::vector<int>::reverse_iterator RIt;
+typedef ft::map<int, std::string>::reverse_iterator RMIt;
+typedef ft::map<int, std::string>::iterator MIt;
 typedef std::vector<int>::iterator SIt;
 
 int main(int argc, char** argv) {
@@ -112,33 +123,7 @@ int main(int argc, char** argv) {
     a[61] = "fkf";
     a[35243] = "asfv";
 
-
-
-    ft::vector<int> veci;
-
-
-    for (int i = 0; i < 10; ++i) {
-        veci.push_back(i);
-    }
-
-    ft::vector<int>::reverse_iterator rbeg = veci.rbegin();
-    ft::vector<int>::reverse_iterator rend = veci.rend();
-
-    for(ft::vector<int>::reverse_iterator it = rbeg; it != rend; it++) {
-        std::cout << *it << std::endl;
-    }
-
-
-    ft::map<int, std::string> b(a);
-    ft::map<int, std::string>::reverse_iterator end = b.rend();
-    ft::map<int, std::string>::reverse_iterator beg = b.rbegin();
-    end--;
-    end--;
-    beg++;
-    for(ft::map<int, std::string>::reverse_iterator it = beg; it != end; it++) {
-        std::cout << it->first << " " << it->second << std::endl;
-    }
-    std::cout << "size " << b.size() << std::endl;
+    print_map_status(a);
 
     return 0;
 }
