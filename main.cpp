@@ -2,14 +2,14 @@
 #include <string>
 #include <deque>
 
-#include "ft_vector/vector.h"
+#include "vector.hpp"
 
 #include <vector>
 #include <algorithm>
 #include "ft_pair/pair.hpp"
-#include <map.h>
+#include <map.hpp>
 #include <map>
-
+#include "stack.hpp"
 
 
 class A {
@@ -95,6 +95,16 @@ void print_map_status(T & map) {
     }
 }
 
+template <typename T>
+void print_stack_status(T & stack) {
+    std::cout << "stack status" << std::endl;
+    std::cout << "size: " << stack.size() << std::endl;
+    while (stack.size() > 0) {
+        std::cout << stack.top() << std::endl;
+        stack.pop();
+    }
+}
+
 template<class T, class TT>
 bool vec_eq(T & v1, TT & v2) {
     if (v1.size() != v2.size())
@@ -125,6 +135,17 @@ int main(int argc, char** argv) {
 
 
     print_map_status(sdasamap);
+
+    ft::vector<int> veci;
+
+    for (int i = 0; i < 20; i+=2) {
+        veci.push_back(i);
+    }
+
+    ft::stack<int, ft::vector<int> > ftstack(veci);
+
+    print_stack_status(ftstack);
+
 
     return 0;
 }

@@ -5,4 +5,4 @@ include_directories(ft_vector ft_map ft_stack ft_meta_cpp .)
 
 set(CMAKE_CXX_STANDARD 98)
 
-add_executable(ft_containers main.cpp ft_map/map.cpp ft_stack/stack.cpp ft_vector/vector.cpp)
+add_executable(ft_containers main.cpp)

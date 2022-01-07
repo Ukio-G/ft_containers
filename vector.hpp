@@ -13,8 +13,6 @@
 #include "ft_meta_cpp/lexicographical_compare.hpp"
 
 namespace ft {
-
-
     template <typename T, typename Allocator = std::allocator<T> >
     class vector;
 
@@ -168,11 +166,6 @@ namespace ft {
             fill_construct(count, value);
         }
 
-        /* 4 */
-        explicit vector( size_type count ) : _size(0), _capacity(0), _data(0)  {
-
-        }
-
         /* 5 */
         template< class InputIt >
         vector( InputIt first, InputIt last, const Allocator& alloc = Allocator() ) : _size(0), _capacity(0), _allocator(alloc), _data(0) {
@@ -181,8 +174,9 @@ namespace ft {
         }
 
         /* 6 */
-        vector( const vector& other ) : _size(other._size), _capacity(other._capacity), _allocator(other._allocator), _data(0) {
+        vector( const vector& other ) : _allocator(other._allocator), _data(0) {
             allocate(other._capacity);
+            _size = other._size;
             for (int i = 0; i < other._size; ++i)
                 _allocator.construct(_data + i, other[i]);
         }
@@ -379,7 +373,7 @@ namespace ft {
             if (_size <= 0) {
                 return;
             }
-            _allocator.destroy(_data[_size - 1]);
+            _allocator.destroy(_data + _size - 1);
             _size--;
         }
 
