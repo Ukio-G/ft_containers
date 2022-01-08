@@ -1,7 +1,7 @@
 #include <iostream>
 #include <string>
 #include <deque>
-#if 1 //CREATE A REAL STL EXAMPLE
+#if 0 //CREATE A REAL STL EXAMPLE
 #include <map>
 #include <stack>
 #include <vector>
@@ -45,14 +45,13 @@ public:
     iterator end() { return this->c.end(); }
 };
 
+
+void vectors_test() {
+
+}
+
+
 int main(int argc, char** argv) {
-//    if (argc != 2)
-//    {
-//        std::cerr << "Usage: ./test seed" << std::endl;
-//        std::cerr << "Provide a seed please" << std::endl;
-//        std::cerr << "Count value:" << COUNT << std::endl;
-//        return 1;
-//    }
     srand(time(0));
 
     ft::vector<std::string> vector_str;
@@ -112,5 +111,7 @@ int main(int argc, char** argv) {
         std::cout << *it;
     }
     std::cout << std::endl;
+
+
     return (0);
 }

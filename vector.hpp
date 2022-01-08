@@ -595,7 +595,7 @@ namespace ft {
     };
 
     template <typename T> typename vector<T>::iterator operator+(typename vector<T>::iterator::difference_type n, typename vector<T>::iterator &it) {
-        return it - n;
+        return it + n;
     }
 
     /*
