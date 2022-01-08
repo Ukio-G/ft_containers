@@ -1,19 +1,22 @@
 #include <iostream>
 #include <string>
 #include <deque>
-#if 0 //CREATE A REAL STL EXAMPLE
-#include <map>
-#include <stack>
 #include <vector>
+#include <stack>
+#include <map>
+#include <check_utils.hpp>
+
+#ifdef __TEST__STD__ //CREATE A REAL STL EXAMPLE
 namespace ft = std;
 #else
-#include <map.hpp>
+    #include <map.hpp>
 	#include <stack.hpp>
 	#include <vector.hpp>
 #endif
 
 #include <stdlib.h>
 #include <ctime>
+#include <cassert>
 
 #define MAX_RAM 4294967296
 #define BUFFER_SIZE 4096
@@ -21,6 +24,19 @@ struct Buffer
 {
     int idx;
     char buff[BUFFER_SIZE];
+};
+
+
+class A {
+public:
+    A() : i(0) { }
+
+    A(int i) : i (i) {}
+
+    bool operator==(const A & other) const { return i == other.i; }
+    bool operator!=(const A & other) const { return i != other.i; }
+
+    int i;
 };
 
 
@@ -47,9 +63,76 @@ public:
 
 
 void vectors_test() {
+    ft::vector<int> svec2(10, 5);
 
+    ft::vector<int> vec1; // Never used
+
+    ft::vector<int> vec2(svec2.begin(), svec2.end());
+    ft::vector<int> vec3(vec2);
+    ft::vector<int> vec4(vec2.begin(), vec2.end());
+    ft::vector<int> vec5(vec2.begin(), vec2.end());
+
+    assert(vectorEq(vec2, vec3));
+    assert(vectorEq(vec2, vec4));
+    assert(vectorEq(vec2, vec5));
+    assert(vectorEq(vec4, vec5));
+    assert(vectorEq(vec4, vec3));
+    print_vector_status(vec2);
+
+    /* Modify and reserve test */
+    ft::vector<int> tmp(8);
+    tmp[0] = 23;
+    tmp[1] = 23;
+    tmp[2] = 2;
+    tmp[3] = 2;
+    tmp[4] = 23;
+    tmp[5] = 23;
+    tmp[6] = 23;
+    tmp[7] = 10;
+    tmp.reserve(100500);
+
+    vec5.assign(5, 23);
+    vec5.push_back(10);
+    vec5.insert(vec5.begin() + 2, 2, 2);
+    assert(vectorEq(tmp, vec5));
+    print_vector_status(vec5);
+    print_vector_status(tmp);
+
+    /* erase test */
+    vec5.push_back(123456);
+    vec5.push_back(123456);
+    vec5.pop_back();
+    vec5.erase(vec5.end() - 1);
+    assert(vectorEq(tmp, vec5));
 }
 
+void map_test() {
+    ft::map<int, A> smap;
+
+    for (int i = 0; i < 100500; ++i) {
+        smap[rand()] = rand();
+    }
+
+    /* Constructor test */
+    ft::map<int, A> map1(smap.begin(), smap.end());
+    ft::map<int, A> map2;
+    assert(!mapEq(map1, map2));
+
+    /* Modify test */
+    map2.insert(map1.begin(), map1.end());
+    assert(mapEq(map1, map2));
+    map1.insert(ft::make_pair(123, 456));
+    map2.insert(ft::make_pair(123, 456));
+
+    /* Erase test */
+    ft::map<int, A>::iterator m_it = map1.begin();
+    for (int i = 0; i < 15; ++i) m_it++;
+
+    map1.erase(map1.find(m_it->first));
+    map2.erase(map2.find(m_it->first));
+
+    assert(mapEq(map1, map2));
+}
 
 int main(int argc, char** argv) {
     srand(time(0));
@@ -112,6 +195,8 @@ int main(int argc, char** argv) {
     }
     std::cout << std::endl;
 
+    vectors_test();
+    map_test();
 
     return (0);
 }
