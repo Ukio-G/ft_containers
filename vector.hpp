@@ -182,13 +182,15 @@ namespace ft {
         }
 
         ~vector() {
-            reallocateToSize(0);
+            if (_data)
+                reallocateToSize(0);
         }
 
         vector<T, Allocator>& operator=(const vector& other) {
             if (&other == this)
                 return *this;
-            reallocateToSize(0);
+            if (_data)
+                reallocateToSize(0);
             allocate(other._capacity);
             _size = other._size;
             _capacity = other._capacity;
@@ -467,7 +469,7 @@ namespace ft {
             std::rotate(begin() + offset, end() - elements_count, end());
         }
 
-        std::string generateOutOfRangeStr(size_type pos, size_type size) {
+        std::string generateOutOfRangeStr(size_type pos, size_type size) const {
             std::string _size_str;
             std::string pos_str;
             std::stringstream ss;

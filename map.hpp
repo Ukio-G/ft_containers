@@ -33,7 +33,7 @@ namespace ft {
                 _parent(other._parent), _left(other._left), _right(other._right), _height(other._height), _owner(other._owner), _pair(other._pair)
         {}
 
-        Tree(Tree *parent, pair<K, V> value) : _parent(parent), _left(0), _right(0), _pair(value), _height(1), _owner(parent->_owner) {}
+        Tree(Tree *parent, pair<K, V>value) : _parent(parent), _left(0), _right(0), _pair(value), _height(1), _owner(parent->_owner) {}
 
         Tree(Owner & owner, pair<K, V> value) : _parent(0), _left(0), _right(0), _pair(value), _height(1), _owner(owner) {}
 
@@ -451,6 +451,7 @@ namespace ft {
             node = root->insert(p, _nodeAllocator);
             _size++;
             root = root->findRoot();
+            node = root->find(k);
             return node->getData().second;
         }
 
