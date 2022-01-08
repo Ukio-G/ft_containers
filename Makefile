@@ -1,13 +1,12 @@
 COMPILER=clang++
 
-CXXFLAGS = -Werror -Wextra -Wall -std=c++98
+CXXFLAGS = -Werror -Wextra -Wall -std=c++98 -Ift_meta_cpp -Ift_pair
 
 HEADERS = map.hpp \
           vector.hpp \
           stack.hpp \
           check_utils.hpp \
           ft_pair/pair.hpp \
-          ft_meta_cpp/enable_if \
           ft_meta_cpp/enable_if.hpp \
           ft_meta_cpp/iterator_traits.hpp \
           ft_meta_cpp/lexicographical_compare.hpp \
@@ -16,21 +15,21 @@ HEADERS = map.hpp \
 
 all: ft_test stl_test
 
-clear:
+clean:
 	rm -rf stl_test ft_test
 
-fclear: clear
+fclean: clean
 	rm -rf stl_main.o ft_main.o
 
-re: fclear all
+re: fclean all
 
-.PHONY: all clear fclear re
+.PHONY: all clean fclean re
 
 stl_main.o: main.cpp $(HEADERS)
 	$(COMPILER) -c main.cpp $(CXXFLAGS) -D__TEST__STD__ -o stl_main.o
 
 ft_main.o: main.cpp $(HEADERS)
-	$(COMPILER) -c main.cpp $(CXXFLAGS) -o stl_main.o
+	$(COMPILER) -c main.cpp $(CXXFLAGS) -o ft_main.o
 
 ft_test: ft_main.o
 	$(COMPILER) ft_main.o -o ft_test

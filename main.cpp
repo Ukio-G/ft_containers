@@ -4,21 +4,21 @@
 #include <vector>
 #include <stack>
 #include <map>
-#include <check_utils.hpp>
+#include "check_utils.hpp"
 
 #ifdef __TEST__STD__ //CREATE A REAL STL EXAMPLE
 namespace ft = std;
 #else
-    #include <map.hpp>
-	#include <stack.hpp>
-	#include <vector.hpp>
+    #include "map.hpp"
+	#include "stack.hpp"
+	#include "vector.hpp"
 #endif
 
 #include <stdlib.h>
 #include <ctime>
 #include <cassert>
 
-#define MAX_RAM 4294967296
+#define MAX_RAM (4294967296 / 4)
 #define BUFFER_SIZE 4096
 struct Buffer
 {
@@ -109,7 +109,7 @@ void vectors_test() {
 void map_test() {
     ft::map<int, A> smap;
 
-    for (int i = 0; i < 100500; ++i) {
+    for (ft::map<int, A>::size_type i = 0; i < 100500; ++i) {
         smap[rand()] = rand();
     }
 
@@ -126,7 +126,7 @@ void map_test() {
 
     /* Erase test */
     ft::map<int, A>::iterator m_it = map1.begin();
-    for (int i = 0; i < 15; ++i) m_it++;
+    for (ft::map<int, A>::size_type i = 0; i < 15; ++i) m_it++;
 
     map1.erase(map1.find(m_it->first));
     map2.erase(map2.find(m_it->first));
@@ -135,7 +135,22 @@ void map_test() {
 }
 
 int main(int argc, char** argv) {
-    srand(time(0));
+    if (argc != 2)
+	{
+		std::cerr << "Usage: ./test seed" << std::endl;
+		std::cerr << "Provide a seed please" << std::endl;
+		std::cerr << "Count value:" << COUNT << std::endl;
+		return 1;
+	}
+
+    #ifdef __TEST__STD__
+		std::cout << "STD version" << std::endl;
+    #else
+		std::cout << "FT version" << std::endl;
+    #endif
+
+	const int seed = atoi(argv[1]);
+	srand(seed);
 
     ft::vector<std::string> vector_str;
     ft::vector<int> vector_int;

@@ -3,7 +3,7 @@
 
 
 #include <functional>
-#include <ft_pair/pair.hpp>
+#include "ft_pair/pair.hpp"
 #include <memory>
 #include <cstddef>
 #include <stdexcept>
@@ -11,8 +11,7 @@
 #include <limits>
 #include <algorithm>
 #include <iostream>
-#include <reverse_iterator.hpp>
-// #include "avl_tree.hpp"
+#include "reverse_iterator.hpp"
 
 namespace ft {
 
@@ -30,12 +29,12 @@ namespace ft {
         typedef typename Owner::allocator_type::template rebind<Tree<K,V,Owner> >::other NodeAllocator;
 
         Tree(const Tree & other) :
-                _parent(other._parent), _left(other._left), _right(other._right), _height(other._height), _owner(other._owner), _pair(other._pair)
+                _left(other._left), _parent(other._parent), _right(other._right), _owner(other._owner), _pair(other._pair), _height(other._height)
         {}
 
-        Tree(Tree *parent, pair<K, V>value) : _parent(parent), _left(0), _right(0), _pair(value), _height(1), _owner(parent->_owner) {}
+        Tree(Tree *parent, pair<K, V>value) :  _left(0), _parent(parent), _right(0), _owner(parent->_owner), _pair(value), _height(1) {}
 
-        Tree(Owner & owner, pair<K, V> value) : _parent(0), _left(0), _right(0), _pair(value), _height(1), _owner(owner) {}
+        Tree(Owner & owner, pair<K, V> value) : _left(0), _parent(0), _right(0), _owner(owner), _pair(value), _height(1)  {}
 
         Tree *findRoot() {
             if (_parent == 0)
@@ -410,11 +409,11 @@ namespace ft {
         template< class InputIt >
         map( InputIt first, InputIt last,
              const Compare& comp = Compare(),
-             const Allocator& alloc = Allocator() ) : root(0), _size(0) {
+             const Allocator& alloc = Allocator() ) : root(0), _comparator(comp), _allocator(alloc), _size(0) {
             insert(first, last);
         }
 
-        map( const map& other ) : root(0), _size(0), _allocator(other._allocator), _nodeAllocator(other._nodeAllocator) {
+        map( const map& other ) : root(0), _allocator(other._allocator), _nodeAllocator(other._nodeAllocator), _size(0) {
             insert(other.begin(), other.end());
         }
 
@@ -660,14 +659,14 @@ namespace ft {
         void erase( iterator start, iterator end) {
             if (!root)
                 return;
-            size_t elements = std::distance(start, end);
+            size_type elements = std::distance(start, end);
             Key *keys = new Key[elements];
-            size_t counter = 0;
+            size_type counter = 0;
             while (start != end) {
                 keys[counter++] = start->first;
                 start++;
             }
-            for (int i = 0; i < elements; ++i) {
+            for (size_type i = 0; i < elements; ++i) {
                 node_type * remove_result = root->remove(keys[i], _nodeAllocator);
                 root = (remove_result) ? remove_result->findRoot() : 0;
             }
@@ -786,7 +785,9 @@ namespace ft {
 
         node_type * checkRoot(const Key & k, T value = T()) {
             if (!root) {
-                root = new node_type(*this, ft::make_pair(k, value));
+                node_type node_root(*this, ft::make_pair(k, value));
+                root = _nodeAllocator.allocate(1);
+                _nodeAllocator.construct(root, node_root);
                 _size++;
                 return root;
             }

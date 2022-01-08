@@ -3,14 +3,14 @@
 
 #include <memory>
 #include <cstddef>
-#include <iterator_traits.hpp>
-#include "ft_meta_cpp/type_traits.hpp"
 #include <stdexcept>
 #include <sstream>
 #include <limits>
 #include <algorithm>
 #include "ft_meta_cpp/reverse_iterator.hpp"
 #include "ft_meta_cpp/lexicographical_compare.hpp"
+#include "ft_meta_cpp/type_traits.hpp"
+#include "iterator_traits.hpp"
 
 namespace ft {
     template <typename T, typename Allocator = std::allocator<T> >
@@ -177,7 +177,7 @@ namespace ft {
         vector( const vector& other ) : _allocator(other._allocator), _data(0) {
             allocate(other._capacity);
             _size = other._size;
-            for (int i = 0; i < other._size; ++i)
+            for (size_type i = 0; i < other._size; ++i)
                 _allocator.construct(_data + i, other[i]);
         }
 
@@ -447,7 +447,7 @@ namespace ft {
             appendMemoryIfNeededForElements(count);
 
             T* placement_data = _data + _size;
-            for (int i = 0; i < count; ++i)
+            for (size_type i = 0; i < count; ++i)
                 _allocator.construct(placement_data + i, value);
             _size += count;
 
@@ -565,7 +565,7 @@ namespace ft {
             size_type copy_elements = std::min(element_count, _size);
 
             /* Copy old elements to new allocated memory */
-            for (int i = 0; i < copy_elements; ++i)
+            for (size_type i = 0; i < copy_elements; ++i)
                 _allocator.construct(new_data + i, _data[i]);
 
             /* Destruct old elements */
@@ -589,7 +589,7 @@ namespace ft {
         }
 
         void destructPlacementObjects() {
-            for (int i = 0; i < _size; ++i)
+            for (size_type i = 0; i < _size; ++i)
                 _allocator.destroy(_data + i);
         }
     };
